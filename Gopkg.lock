@@ -63,15 +63,55 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:5da8ce674952566deae4dbc23d07c85caafc6cfa815b0b3e03e41979cedb8750"
+  digest = "1:ac83cf90d08b63ad5f7e020ef480d319ae890c208f8524622a2f3136e2686b02"
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "477a77ecc69700c7cdeb1fa9e129548e1c1c393c"
+  version = "v0.1.1"
+
+[[projects]]
+  digest = "1:b762f96c1183763894e8dabbac5f8e8d5821754b6e2686a8c398a174b7a58ff5"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
+    "mock",
     "require",
   ]
   pruneopts = "UT"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:5ed88c68e8ff11e085ec406c214dbbd94ca2dd52143e00c8e86c78d880576188"
+  name = "github.com/vektra/mockery"
+  packages = [
+    "cmd/mockery",
+    "mockery",
+  ]
+  pruneopts = "UT"
+  revision = "e78b021dcbb558a8e7ac1fc5bc757ad7c277bb81"
+
+[[projects]]
+  branch = "master"
+  digest = "1:93f3f17886abf8d17ff07ece88d6e1974226f5638d216041bd2234ca03ef848c"
+  name = "golang.org/x/tools"
+  packages = [
+    "go/ast/astutil",
+    "go/gcexportdata",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
+    "imports",
+    "internal/fastwalk",
+    "internal/gopathwalk",
+    "internal/module",
+    "internal/semver",
+  ]
+  pruneopts = "UT"
+  revision = "35c670923e21e5c3722e299a75d7cf2fb7daefac"
 
 [[projects]]
   branch = "v3-unstable"
@@ -95,7 +135,9 @@
   input-imports = [
     "github.com/alecthomas/gometalinter",
     "github.com/stretchr/testify/assert",
+    "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
+    "github.com/vektra/mockery/cmd/mockery",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

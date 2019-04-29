@@ -1,6 +1,7 @@
 package hashmap
 
 // Key ...
+//go:generate mockery -name=Key -case=underscore
 type Key interface {
 	Hash() int
 	Equals(key interface{}) bool
