@@ -10,3 +10,9 @@ type bucket struct {
 	key   Key
 	value interface{}
 }
+
+// HashMap ...
+type HashMap struct {
+	buckets []*bucket
+	size    int
+}
