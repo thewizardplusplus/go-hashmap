@@ -1,0 +1,7 @@
+required = [
+  "github.com/alecthomas/gometalinter",
+]
+
+[prune]
+  go-tests = true
+  unused-packages = true

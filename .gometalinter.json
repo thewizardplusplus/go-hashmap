@@ -1,0 +1,6 @@
+{
+  "Vendor": true,
+  "Test": true,
+  "Skip": ["mocks"],
+  "EnableAll": true
+}
