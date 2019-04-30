@@ -30,49 +30,48 @@ func NewHashMap() *HashMap {
 
 // Get ...
 func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
-	for index := key.Hash(); ; index++ {
-		modIndex := index % len(hashMap.buckets)
-		bucket := hashMap.buckets[modIndex]
-		if bucket == nil {
-			return nil, false
-		}
-		if bucket.key.Equals(key) {
-			return bucket.value, true
-		}
+	index, ok := hashMap.find(key)
+	if !ok {
+		return nil, false
 	}
+
+	return hashMap.buckets[index].value, true
 }
 
 // Set ...
 func (hashMap *HashMap) Set(key Key, value interface{}) {
-	for index := key.Hash(); ; index++ {
-		modIndex := index % len(hashMap.buckets)
-		b := hashMap.buckets[modIndex]
-		if b == nil {
-			hashMap.buckets[modIndex] = &bucket{key, value}
-			hashMap.size++
-
-			return
-		}
-		if b.key.Equals(key) {
-			hashMap.buckets[modIndex].value = value
-			return
-		}
+	index, ok := hashMap.find(key)
+	if ok {
+		hashMap.buckets[index].value = value
+		return
 	}
+
+	hashMap.buckets[index] = &bucket{key, value}
+	hashMap.size++
 }
 
 // Delete ...
 func (hashMap *HashMap) Delete(key Key) (ok bool) {
+	index, ok := hashMap.find(key)
+	if !ok {
+		return false
+	}
+
+	hashMap.buckets[index] = nil
+	hashMap.size--
+
+	return true
+}
+
+func (hashMap HashMap) find(key Key) (index int, ok bool) {
 	for index := key.Hash(); ; index++ {
 		modIndex := index % len(hashMap.buckets)
 		bucket := hashMap.buckets[modIndex]
 		if bucket == nil {
-			return false
+			return modIndex, false
 		}
 		if bucket.key.Equals(key) {
-			hashMap.buckets[modIndex] = nil
-			hashMap.size--
-
-			return true
+			return modIndex, true
 		}
 	}
 }
