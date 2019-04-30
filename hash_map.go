@@ -26,8 +26,7 @@ const (
 
 // NewHashMap ...
 func NewHashMap() *HashMap {
-	buckets := make([]*bucket, initialCapacity)
-	return &HashMap{buckets: buckets, size: 0}
+	return newHashMapWithCapacity(initialCapacity)
 }
 
 // Get ...
@@ -84,13 +83,17 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 }
 
 func (hashMap *HashMap) rehash() {
-	buckets := make([]*bucket, len(hashMap.buckets)*growFactor)
-	newHashMap := HashMap{buckets: buckets, size: 0}
+	newHashMap := newHashMapWithCapacity(len(hashMap.buckets) * growFactor)
 	for _, bucket := range hashMap.buckets {
 		if bucket != nil {
 			newHashMap.Set(bucket.key, bucket.value)
 		}
 	}
 
-	*hashMap = newHashMap
+	*hashMap = *newHashMap
+}
+
+func newHashMapWithCapacity(capacity int) *HashMap {
+	buckets := make([]*bucket, capacity)
+	return &HashMap{buckets: buckets, size: 0}
 }
