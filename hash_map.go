@@ -41,3 +41,20 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 		}
 	}
 }
+
+// Delete ...
+func (hashMap *HashMap) Delete(key Key) (ok bool) {
+	for index := key.Hash(); ; index++ {
+		modIndex := index % len(hashMap.buckets)
+		bucket := hashMap.buckets[modIndex]
+		if bucket == nil {
+			return false
+		}
+		if bucket.key.Equals(key) {
+			hashMap.buckets[modIndex] = nil
+			hashMap.size--
+
+			return true
+		}
+	}
+}
