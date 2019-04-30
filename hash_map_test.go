@@ -171,7 +171,116 @@ func TestHashMap_Delete(test *testing.T) {
 		wantSize int
 		wantOk   assert.BoolAssertionFunc
 	}{
-		// TODO: add test cases
+		{
+			name: "without buckets",
+			fields: fields{
+				makeBuckets: func() []*bucket { return make([]*bucket, initialCapacity) },
+				size:        0,
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantSize: 0,
+			wantOk:   assert.False,
+		},
+		{
+			name: "with few buckets and a match at the start",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(true)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: new(mocks.Key), value: "six"}
+					buckets[7] = &bucket{key: new(mocks.Key), value: "seven"}
+
+					return buckets
+				},
+				size: 3,
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantSize: 2,
+			wantOk:   assert.True,
+		},
+		{
+			name: "with few buckets and a match at the end",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(false)
+
+					sixKey := new(mocks.Key)
+					sixKey.On("Equals", mock.Anything).Return(false)
+
+					sevenKey := new(mocks.Key)
+					sevenKey.On("Equals", mock.Anything).Return(true)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: sixKey, value: "six"}
+					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+
+					return buckets
+				},
+				size: 3,
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantSize: 2,
+			wantOk:   assert.True,
+		},
+		{
+			name: "with few buckets and no match",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(false)
+
+					sixKey := new(mocks.Key)
+					sixKey.On("Equals", mock.Anything).Return(false)
+
+					sevenKey := new(mocks.Key)
+					sevenKey.On("Equals", mock.Anything).Return(false)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: sixKey, value: "six"}
+					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+
+					return buckets
+				},
+				size: 3,
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantSize: 3,
+			wantOk:   assert.False,
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			buckets := data.fields.makeBuckets()
