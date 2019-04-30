@@ -20,6 +20,8 @@ type HashMap struct {
 
 const (
 	initialCapacity = 16
+	maxLoadFactor   = 0.75
+	growFactor      = 2
 )
 
 // NewHashMap ...
@@ -48,6 +50,11 @@ func (hashMap *HashMap) Set(key Key, value interface{}) {
 
 	hashMap.buckets[index] = &bucket{key, value}
 	hashMap.size++
+
+	loadFactor := float64(hashMap.size) / float64(len(hashMap.buckets))
+	if loadFactor > maxLoadFactor {
+		hashMap.rehash()
+	}
 }
 
 // Delete ...
@@ -74,4 +81,16 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 			return modIndex, true
 		}
 	}
+}
+
+func (hashMap *HashMap) rehash() {
+	buckets := make([]*bucket, len(hashMap.buckets)*growFactor)
+	newHashMap := HashMap{buckets: buckets, size: 0}
+	for _, bucket := range hashMap.buckets {
+		if bucket != nil {
+			newHashMap.Set(bucket.key, bucket.value)
+		}
+	}
+
+	*hashMap = newHashMap
 }
