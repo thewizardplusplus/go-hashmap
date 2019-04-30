@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/thewizardplusplus/go-hashmap/mocks"
 )
 
 func TestNewHashMap(test *testing.T) {
@@ -30,7 +31,112 @@ func TestHashMap_Get(test *testing.T) {
 		wantValue interface{}
 		wantOk    assert.BoolAssertionFunc
 	}{
-		// TODO: add test cases
+		{
+			name: "without buckets",
+			fields: fields{
+				makeBuckets: func() []*bucket { return make([]*bucket, initialCapacity) },
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantValue: nil,
+			wantOk:    assert.False,
+		},
+		{
+			name: "with few buckets and a match at the start",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(true)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: new(mocks.Key), value: "six"}
+					buckets[7] = &bucket{key: new(mocks.Key), value: "seven"}
+
+					return buckets
+				},
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantValue: "five",
+			wantOk:    assert.True,
+		},
+		{
+			name: "with few buckets and a match at the end",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(false)
+
+					sixKey := new(mocks.Key)
+					sixKey.On("Equals", mock.Anything).Return(false)
+
+					sevenKey := new(mocks.Key)
+					sevenKey.On("Equals", mock.Anything).Return(true)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: sixKey, value: "six"}
+					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+
+					return buckets
+				},
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantValue: "seven",
+			wantOk:    assert.True,
+		},
+		{
+			name: "with few buckets and no match",
+			fields: fields{
+				makeBuckets: func() []*bucket {
+					fiveKey := new(mocks.Key)
+					fiveKey.On("Equals", mock.Anything).Return(false)
+
+					sixKey := new(mocks.Key)
+					sixKey.On("Equals", mock.Anything).Return(false)
+
+					sevenKey := new(mocks.Key)
+					sevenKey.On("Equals", mock.Anything).Return(false)
+
+					buckets := make([]*bucket, initialCapacity)
+					buckets[5] = &bucket{key: fiveKey, value: "five"}
+					buckets[6] = &bucket{key: sixKey, value: "six"}
+					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+
+					return buckets
+				},
+			},
+			args: args{
+				makeKey: func() Key {
+					key := new(mocks.Key)
+					key.On("Hash").Return(5)
+
+					return key
+				},
+			},
+			wantValue: nil,
+			wantOk:    assert.False,
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			buckets := data.fields.makeBuckets()
