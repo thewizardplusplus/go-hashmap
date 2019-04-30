@@ -1,6 +1,7 @@
 package hashmap
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -151,6 +152,46 @@ func TestHashMap_Get(test *testing.T) {
 			mock.AssertExpectationsForObjects(test, key)
 			assert.Equal(test, gotValue, data.wantValue)
 			data.wantOk(test, gotOk)
+		})
+	}
+}
+
+func TestHashMap_Set(test *testing.T) {
+	type fields struct {
+		makeBuckets func() []*bucket
+		size        int
+	}
+	type args struct {
+		makeKey func() Key
+	}
+
+	for _, data := range []struct {
+		name     string
+		fields   fields
+		args     args
+		wantSize int
+	}{
+		// TODO: add test cases
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			buckets := data.fields.makeBuckets()
+			key := data.args.makeKey()
+			value := rand.Int()
+
+			hashMap := HashMap{buckets: buckets, size: data.fields.size}
+			hashMap.Set(key, value)
+
+			gotValue, gotOk := hashMap.Get(key)
+
+			for _, bucket := range buckets {
+				if bucket != nil {
+					mock.AssertExpectationsForObjects(test, bucket.key)
+				}
+			}
+			mock.AssertExpectationsForObjects(test, key)
+			assert.Equal(test, data.wantSize, hashMap.size)
+			assert.Equal(test, value, gotValue)
+			assert.True(test, gotOk)
 		})
 	}
 }
