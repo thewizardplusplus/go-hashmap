@@ -154,3 +154,42 @@ func TestHashMap_Get(test *testing.T) {
 		})
 	}
 }
+
+func TestHashMap_Delete(test *testing.T) {
+	type fields struct {
+		makeBuckets func() []*bucket
+		size        int
+	}
+	type args struct {
+		makeKey func() Key
+	}
+
+	for _, data := range []struct {
+		name     string
+		fields   fields
+		args     args
+		wantSize int
+		wantOk   assert.BoolAssertionFunc
+	}{
+		// TODO: add test cases
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			buckets := data.fields.makeBuckets()
+			key := data.args.makeKey()
+
+			hashMap := HashMap{buckets: buckets, size: data.fields.size}
+			gotDeleteOk := hashMap.Delete(key)
+			_, gotGetOk := hashMap.Get(key)
+
+			for _, bucket := range buckets {
+				if bucket != nil {
+					mock.AssertExpectationsForObjects(test, bucket.key)
+				}
+			}
+			mock.AssertExpectationsForObjects(test, key)
+			assert.Equal(test, data.wantSize, hashMap.size)
+			data.wantOk(test, gotDeleteOk)
+			assert.False(test, gotGetOk)
+		})
+	}
+}
