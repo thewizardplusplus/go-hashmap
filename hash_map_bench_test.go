@@ -21,6 +21,28 @@ func (key IntKey) Equals(other interface{}) bool {
 	return key == other.(IntKey)
 }
 
+func BenchmarkBuiltinMap(benchmark *testing.B) {
+	for _, data := range []struct {
+		name      string
+		prepare   func(size int) map[int]int
+		benchmark func(size int, builtinMap map[int]int)
+	}{
+		// TODO: add benchmark cases
+	} {
+		for size := 10; size <= 1e6; size *= 10 {
+			name := fmt.Sprintf("%s/%d", data.name, size)
+			benchmark.Run(name, func(benchmark *testing.B) {
+				builtinMap := data.prepare(size)
+				benchmark.ResetTimer()
+
+				for i := 0; i < benchmark.N; i++ {
+					data.benchmark(size, builtinMap)
+				}
+			})
+		}
+	}
+}
+
 func BenchmarkHashMap(benchmark *testing.B) {
 	for _, data := range []struct {
 		name      string
