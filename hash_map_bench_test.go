@@ -27,7 +27,45 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 		prepare   func(size int) map[int]int
 		benchmark func(size int, builtinMap map[int]int)
 	}{
-		// TODO: add benchmark cases
+		{
+			name: "Get",
+			prepare: func(size int) map[int]int {
+				builtinMap := make(map[int]int)
+				for i := 0; i < size; i++ {
+					builtinMap[i] = i
+				}
+
+				return builtinMap
+			},
+			benchmark: func(size int, builtinMap map[int]int) {
+				_ = builtinMap[rand.Intn(size)]
+			},
+		},
+		{
+			name:    "Set",
+			prepare: func(size int) map[int]int { return make(map[int]int) },
+			benchmark: func(size int, builtinMap map[int]int) {
+				for i := 0; i < size; i++ {
+					builtinMap[i] = i
+				}
+			},
+		},
+		{
+			name: "Delete",
+			prepare: func(size int) map[int]int {
+				builtinMap := make(map[int]int)
+				for i := 0; i < size; i++ {
+					builtinMap[i] = i
+				}
+
+				return builtinMap
+			},
+			benchmark: func(size int, builtinMap map[int]int) {
+				for i := 0; i < size; i++ {
+					delete(builtinMap, i)
+				}
+			},
+		},
 	} {
 		for size := 10; size <= 1e6; size *= 10 {
 			name := fmt.Sprintf("%s/%d", data.name, size)
