@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/thewizardplusplus/go-hashmap/mocks"
 )
 
 func TestSynchronizedHashMap(test *testing.T) {
@@ -15,7 +16,104 @@ func TestSynchronizedHashMap(test *testing.T) {
 		wantValue   interface{}
 		wantOk      assert.BoolAssertionFunc
 	}{
-		// TODO: add test cases
+		{
+			name:        "getting by a nonexistent key",
+			makeHashMap: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
+			makeKey: func() Key {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				return key
+			},
+			wantValue: nil,
+			wantOk:    assert.False,
+		},
+		{
+			name: "setting by a nonexistent key",
+			makeHashMap: func() *SynchronizedHashMap {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+				// it's called inside the HashMap.Get() method below
+				key.On("Equals", mock.Anything).Return(true)
+
+				hashMap := NewSynchronizedHashMap()
+				hashMap.Set(key, "five")
+
+				return hashMap
+			},
+			makeKey: func() Key {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				return key
+			},
+			wantValue: "five",
+			wantOk:    assert.True,
+		},
+		{
+			name: "setting by an existing key",
+			makeHashMap: func() *SynchronizedHashMap {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+				key.On("Equals", mock.Anything).Return(true)
+
+				hashMap := NewSynchronizedHashMap()
+				hashMap.Set(key, "five #1")
+				hashMap.Set(key, "five #2")
+
+				return hashMap
+			},
+			makeKey: func() Key {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				return key
+			},
+			wantValue: "five #2",
+			wantOk:    assert.True,
+		},
+		{
+			name: "deleting by a nonexistent key",
+			makeHashMap: func() *SynchronizedHashMap {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				hashMap := NewSynchronizedHashMap()
+				hashMap.Delete(key)
+
+				return hashMap
+			},
+			makeKey: func() Key {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				return key
+			},
+			wantValue: nil,
+			wantOk:    assert.False,
+		},
+		{
+			name: "deleting by an existing key",
+			makeHashMap: func() *SynchronizedHashMap {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+				key.On("Equals", mock.Anything).Return(true)
+
+				hashMap := NewSynchronizedHashMap()
+				hashMap.Set(key, "five")
+				hashMap.Delete(key)
+
+				return hashMap
+			},
+			makeKey: func() Key {
+				key := new(mocks.Key)
+				key.On("Hash").Return(5)
+
+				return key
+			},
+			wantValue: nil,
+			wantOk:    assert.False,
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			hashMap := data.makeHashMap()
