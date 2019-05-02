@@ -14,3 +14,11 @@ type SynchronizedHashMap struct {
 func NewSynchronizedHashMap() *SynchronizedHashMap {
 	return &SynchronizedHashMap{innerMap: NewHashMap()}
 }
+
+// Get ...
+func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
+	hashMap.lock.RLock()
+	defer hashMap.lock.RUnlock()
+
+	return hashMap.innerMap.Get(key)
+}
