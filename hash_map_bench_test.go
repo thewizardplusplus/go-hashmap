@@ -12,7 +12,7 @@ type IntKey int
 
 func (key IntKey) Hash() int {
 	hash := fnv.New32()
-	binary.Write(hash, binary.LittleEndian, int32(key))
+	binary.Write(hash, binary.LittleEndian, int32(key)) // nolint: errcheck
 
 	return int(hash.Sum32())
 }

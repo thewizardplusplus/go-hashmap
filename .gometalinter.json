@@ -2,5 +2,6 @@
   "Vendor": true,
   "Test": true,
   "Skip": ["mocks"],
-  "EnableAll": true
+  "EnableAll": true,
+  "Disable": ["dupl"]
 }

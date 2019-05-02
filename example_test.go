@@ -10,7 +10,7 @@ type StringKey string
 
 func (key StringKey) Hash() int {
 	hash := fnv.New32()
-	io.WriteString(hash, string(key))
+	io.WriteString(hash, string(key)) // nolint: errcheck
 
 	return int(hash.Sum32())
 }
