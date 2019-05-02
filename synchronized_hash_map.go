@@ -22,3 +22,11 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 
 	return hashMap.innerMap.Get(key)
 }
+
+// Set ...
+func (hashMap *SynchronizedHashMap) Set(key Key, value interface{}) {
+	hashMap.lock.Lock()
+	defer hashMap.lock.Unlock()
+
+	hashMap.innerMap.Set(key, value)
+}
