@@ -19,8 +19,8 @@ func (key StringKey) Equals(other interface{}) bool {
 	return key == other.(StringKey)
 }
 
-func ExampleHashMap() {
-	timeZones := NewHashMap()
+func Example() {
+	timeZones := NewSynchronizedHashMap()
 	timeZones.Set(StringKey("EST"), -5*60*60)
 	timeZones.Set(StringKey("CST"), -6*60*60)
 	timeZones.Set(StringKey("MST"), -7*60*60)
