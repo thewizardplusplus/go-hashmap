@@ -18,3 +18,9 @@ func NewConcurrentHashMap() ConcurrentHashMap {
 
 	return ConcurrentHashMap{segments: segments}
 }
+
+// Get ...
+func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
+	index := key.Hash() % len(hashMap.segments)
+	return hashMap.segments[index].Get(key)
+}
