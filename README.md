@@ -50,7 +50,7 @@ func main() {
 
 ## Benchmarks
 
-### SynchronizedHashMap
+### SynchronizedHashMap & ConcurrentHashMap
 
 ```
 BenchmarkSynchronizedBuiltinMap/Get/1000/1-4         	10000000	      1459 ns/op	      16 B/op	       1 allocs/op
@@ -65,6 +65,10 @@ BenchmarkSynchronizedHashMap/Get/1000/1-4            	10000000	      1841 ns/op	
 BenchmarkSynchronizedHashMap/Get/1000/10-4           	 1000000	     14205 ns/op	     255 B/op	      40 allocs/op
 BenchmarkSynchronizedHashMap/Get/1000/100-4          	  200000	     81408 ns/op	    2415 B/op	     400 allocs/op
 BenchmarkSynchronizedHashMap/Get/1000/1000-4         	   30000	    477555 ns/op	   24063 B/op	    3999 allocs/op
+BenchmarkConcurrentHashMap/Get/1000/1-4         	 3000000	      4316 ns/op	      55 B/op	       7 allocs/op
+BenchmarkConcurrentHashMap/Get/1000/10-4        	 1000000	     20194 ns/op	     415 B/op	      70 allocs/op
+BenchmarkConcurrentHashMap/Get/1000/100-4       	  200000	    101014 ns/op	    4015 B/op	     700 allocs/op
+BenchmarkConcurrentHashMap/Get/1000/1000-4      	   20000	    643696 ns/op	   40085 B/op	    6999 allocs/op
 ```
 
 ```
@@ -80,6 +84,10 @@ BenchmarkSynchronizedHashMap/Set/1000/1-4            	   50000	    348997 ns/op	
 BenchmarkSynchronizedHashMap/Set/1000/10-4           	    3000	   6011785 ns/op	  319918 B/op	   49973 allocs/op
 BenchmarkSynchronizedHashMap/Set/1000/100-4          	     200	  60215359 ns/op	 3199397 B/op	  499740 allocs/op
 BenchmarkSynchronizedHashMap/Set/1000/1000-4         	      10	1055409411 ns/op	32054326 B/op	 4998449 allocs/op
+BenchmarkConcurrentHashMap/Set/1000/1-4         	   20000	    632797 ns/op	   48006 B/op	    7997 allocs/op
+BenchmarkConcurrentHashMap/Set/1000/10-4        	    5000	   3333305 ns/op	  479906 B/op	   79962 allocs/op
+BenchmarkConcurrentHashMap/Set/1000/100-4       	     500	  33006847 ns/op	 4799931 B/op	  799631 allocs/op
+BenchmarkConcurrentHashMap/Set/1000/1000-4      	      20	 667340402 ns/op	48085449 B/op	 7997552 allocs/op
 ```
 
 ```
@@ -95,6 +103,10 @@ BenchmarkSynchronizedHashMap/Delete/1000/1-4            	10000000	      1845 ns/
 BenchmarkSynchronizedHashMap/Delete/1000/10-4           	 1000000	     13879 ns/op	     256 B/op	      40 allocs/op
 BenchmarkSynchronizedHashMap/Delete/1000/100-4          	  100000	    128004 ns/op	    2420 B/op	     400 allocs/op
 BenchmarkSynchronizedHashMap/Delete/1000/1000-4         	   10000	   1034500 ns/op	   24281 B/op	    4002 allocs/op
+BenchmarkConcurrentHashMap/Delete/1000/1-4      	 5000000	      3330 ns/op	      55 B/op	       7 allocs/op
+BenchmarkConcurrentHashMap/Delete/1000/10-4     	 1000000	     17399 ns/op	     415 B/op	      70 allocs/op
+BenchmarkConcurrentHashMap/Delete/1000/100-4    	  200000	     96695 ns/op	    4016 B/op	     700 allocs/op
+BenchmarkConcurrentHashMap/Delete/1000/1000-4   	   20000	    595056 ns/op	   40126 B/op	    6999 allocs/op
 ```
 
 ### HashMap
