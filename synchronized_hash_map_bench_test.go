@@ -48,7 +48,47 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 		prepare   func() *SynchronizedBuiltinMap
 		benchmark func(builtinMap *SynchronizedBuiltinMap)
 	}{
-		// TODO: add benchmark cases
+		{
+			name: "Get",
+			prepare: func() *SynchronizedBuiltinMap {
+				builtinMap := NewSynchronizedBuiltinMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					builtinMap.Set(i, i)
+				}
+
+				return builtinMap
+			},
+			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
+				builtinMap.Get(rand.Intn(sizeForSyncBench))
+			},
+		},
+		{
+			name: "Set",
+			prepare: func() *SynchronizedBuiltinMap {
+				return NewSynchronizedBuiltinMap()
+			},
+			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					builtinMap.Set(i, i)
+				}
+			},
+		},
+		{
+			name: "Delete",
+			prepare: func() *SynchronizedBuiltinMap {
+				builtinMap := NewSynchronizedBuiltinMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					builtinMap.Set(i, i)
+				}
+
+				return builtinMap
+			},
+			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					builtinMap.Delete(i)
+				}
+			},
+		},
 	} {
 		for threads := 1; threads <= 1e3; threads *= 10 {
 			name := fmt.Sprintf("%s/%d/%d", data.name, sizeForSyncBench, threads)
