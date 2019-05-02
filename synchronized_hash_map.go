@@ -32,9 +32,9 @@ func (hashMap *SynchronizedHashMap) Set(key Key, value interface{}) {
 }
 
 // Delete ...
-func (hashMap *SynchronizedHashMap) Delete(key Key) (ok bool) {
+func (hashMap *SynchronizedHashMap) Delete(key Key) {
 	hashMap.lock.Lock()
 	defer hashMap.lock.Unlock()
 
-	return hashMap.innerMap.Delete(key)
+	hashMap.innerMap.Delete(key)
 }

@@ -30,8 +30,8 @@ func (hashMap ConcurrentHashMap) Set(key Key, value interface{}) {
 }
 
 // Delete ...
-func (hashMap ConcurrentHashMap) Delete(key Key) (ok bool) {
-	return hashMap.selectSegment(key).Delete(key)
+func (hashMap ConcurrentHashMap) Delete(key Key) {
+	hashMap.selectSegment(key).Delete(key)
 }
 
 func (hashMap ConcurrentHashMap) selectSegment(key Key) *SynchronizedHashMap {

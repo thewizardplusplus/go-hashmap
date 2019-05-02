@@ -58,16 +58,14 @@ func (hashMap *HashMap) Set(key Key, value interface{}) {
 }
 
 // Delete ...
-func (hashMap *HashMap) Delete(key Key) (ok bool) {
+func (hashMap *HashMap) Delete(key Key) {
 	index, ok := hashMap.find(key)
 	if !ok {
-		return false
+		return
 	}
 
 	hashMap.buckets[index] = nil
 	hashMap.size--
-
-	return true
 }
 
 func (hashMap HashMap) find(key Key) (index int, ok bool) {

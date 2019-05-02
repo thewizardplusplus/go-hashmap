@@ -392,7 +392,6 @@ func TestHashMap_Delete(test *testing.T) {
 		fields   fields
 		args     args
 		wantSize int
-		wantOk   assert.BoolAssertionFunc
 	}{
 		{
 			name: "without buckets",
@@ -409,7 +408,6 @@ func TestHashMap_Delete(test *testing.T) {
 				},
 			},
 			wantSize: 0,
-			wantOk:   assert.False,
 		},
 		{
 			name: "with few buckets and a match at the start",
@@ -436,7 +434,6 @@ func TestHashMap_Delete(test *testing.T) {
 				},
 			},
 			wantSize: 2,
-			wantOk:   assert.True,
 		},
 		{
 			name: "with few buckets and a match at the end",
@@ -469,7 +466,6 @@ func TestHashMap_Delete(test *testing.T) {
 				},
 			},
 			wantSize: 2,
-			wantOk:   assert.True,
 		},
 		{
 			name: "with few buckets and no match",
@@ -502,7 +498,6 @@ func TestHashMap_Delete(test *testing.T) {
 				},
 			},
 			wantSize: 3,
-			wantOk:   assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
@@ -510,7 +505,8 @@ func TestHashMap_Delete(test *testing.T) {
 			key := data.args.makeKey()
 
 			hashMap := HashMap{buckets: buckets, size: data.fields.size}
-			gotDeleteOk := hashMap.Delete(key)
+			hashMap.Delete(key)
+
 			_, gotGetOk := hashMap.Get(key)
 
 			for _, bucket := range buckets {
@@ -520,7 +516,6 @@ func TestHashMap_Delete(test *testing.T) {
 			}
 			mock.AssertExpectationsForObjects(test, key)
 			assert.Equal(test, data.wantSize, hashMap.size)
-			data.wantOk(test, gotDeleteOk)
 			assert.False(test, gotGetOk)
 		})
 	}
