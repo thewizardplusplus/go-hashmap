@@ -61,9 +61,7 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(size int, builtinMap map[int]int) {
-				for i := 0; i < size; i++ {
-					delete(builtinMap, i)
-				}
+				delete(builtinMap, rand.Intn(size))
 			},
 		},
 	} {
@@ -121,9 +119,7 @@ func BenchmarkHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(size int, hashMap *HashMap) {
-				for i := 0; i < size; i++ {
-					hashMap.Delete(IntKey(i))
-				}
+				hashMap.Delete(IntKey(rand.Intn(size)))
 			},
 		},
 	} {

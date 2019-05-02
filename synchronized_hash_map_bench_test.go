@@ -84,9 +84,7 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
-				for i := 0; i < sizeForSyncBench; i++ {
-					builtinMap.Delete(i)
-				}
+				builtinMap.Delete(rand.Intn(sizeForSyncBench))
 			},
 		},
 	} {
@@ -154,9 +152,7 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 				return syncMap
 			},
 			benchmark: func(syncMap *sync.Map) {
-				for i := 0; i < sizeForSyncBench; i++ {
-					syncMap.Delete(i)
-				}
+				syncMap.Delete(rand.Intn(sizeForSyncBench))
 			},
 		},
 	} {
@@ -224,9 +220,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
-				for i := 0; i < sizeForSyncBench; i++ {
-					hashMap.Delete(IntKey(i))
-				}
+				hashMap.Delete(IntKey(rand.Intn(sizeForSyncBench)))
 			},
 		},
 	} {

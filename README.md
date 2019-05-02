@@ -83,18 +83,18 @@ BenchmarkSynchronizedHashMap/Set/1000/1000-4         	      10	1055409411 ns/op	
 ```
 
 ```
-BenchmarkSynchronizedBuiltinMap/Delete/1000/1-4         	  200000	     84456 ns/op	      16 B/op	       1 allocs/op
-BenchmarkSynchronizedBuiltinMap/Delete/1000/10-4        	    5000	   2994515 ns/op	      25 B/op	       1 allocs/op
-BenchmarkSynchronizedBuiltinMap/Delete/1000/100-4       	     500	  32285601 ns/op	      45 B/op	       1 allocs/op
-BenchmarkSynchronizedBuiltinMap/Delete/1000/1000-4      	      50	 241843645 ns/op	    2929 B/op	      35 allocs/op
-BenchmarkSyncMap/Delete/1000/1-4                        	  500000	     40940 ns/op	      16 B/op	       1 allocs/op
-BenchmarkSyncMap/Delete/1000/10-4                       	   10000	   1638023 ns/op	      16 B/op	       1 allocs/op
-BenchmarkSyncMap/Delete/1000/100-4                      	    1000	  17531780 ns/op	      24 B/op	       1 allocs/op
-BenchmarkSyncMap/Delete/1000/1000-4                     	     200	  96635575 ns/op	     702 B/op	       9 allocs/op
-BenchmarkSynchronizedHashMap/Delete/1000/1-4            	   50000	    309958 ns/op	   24000 B/op	    3999 allocs/op
-BenchmarkSynchronizedHashMap/Delete/1000/10-4           	    3000	   5388247 ns/op	  239949 B/op	   39981 allocs/op
-BenchmarkSynchronizedHashMap/Delete/1000/100-4          	     300	  54078650 ns/op	 2399484 B/op	  399804 allocs/op
-BenchmarkSynchronizedHashMap/Delete/1000/1000-4         	      10	1075765782 ns/op	24031883 B/op	 3998525 allocs/op
+BenchmarkSynchronizedBuiltinMap/Delete/1000/1-4         	10000000	      1401 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Delete/1000/10-4        	 2000000	      9781 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Delete/1000/100-4       	  200000	     67847 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Delete/1000/1000-4      	   50000	    393990 ns/op	      18 B/op	       1 allocs/op
+BenchmarkSyncMap/Delete/1000/1-4                        	10000000	      1329 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Delete/1000/10-4                       	 2000000	      8929 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Delete/1000/100-4                      	  200000	     61734 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Delete/1000/1000-4                     	   50000	    374220 ns/op	      18 B/op	       1 allocs/op
+BenchmarkSynchronizedHashMap/Delete/1000/1-4            	10000000	      1845 ns/op	      39 B/op	       4 allocs/op
+BenchmarkSynchronizedHashMap/Delete/1000/10-4           	 1000000	     13879 ns/op	     256 B/op	      40 allocs/op
+BenchmarkSynchronizedHashMap/Delete/1000/100-4          	  100000	    128004 ns/op	    2420 B/op	     400 allocs/op
+BenchmarkSynchronizedHashMap/Delete/1000/1000-4         	   10000	   1034500 ns/op	   24281 B/op	    4002 allocs/op
 ```
 
 ### HashMap
@@ -130,18 +130,18 @@ BenchmarkHashMap/Set/1000000-4       	      20	 551907702 ns/op	39052584 B/op	 5
 ```
 
 ```
-BenchmarkBuiltinMap/Delete/10-4         	300000000	        48.0 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBuiltinMap/Delete/100-4        	30000000	       445 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBuiltinMap/Delete/1000-4       	 3000000	      4338 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBuiltinMap/Delete/10000-4      	  300000	     43228 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBuiltinMap/Delete/100000-4     	   30000	    432701 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBuiltinMap/Delete/1000000-4    	    3000	   4378122 ns/op	       0 B/op	       0 allocs/op
-BenchmarkHashMap/Delete/10-4            	10000000	      2067 ns/op	     232 B/op	      38 allocs/op
-BenchmarkHashMap/Delete/100-4           	 1000000	     20780 ns/op	    2392 B/op	     398 allocs/op
-BenchmarkHashMap/Delete/1000-4          	  100000	    207031 ns/op	   23992 B/op	    3998 allocs/op
-BenchmarkHashMap/Delete/10000-4         	   10000	   2170782 ns/op	  239992 B/op	   39998 allocs/op
-BenchmarkHashMap/Delete/100000-4        	     500	  25951595 ns/op	 2400000 B/op	  399998 allocs/op
-BenchmarkHashMap/Delete/1000000-4       	      50	 297262710 ns/op	24000005 B/op	 3999998 allocs/op
+BenchmarkBuiltinMap/Delete/10-4     	300000000	        49.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Delete/100-4    	300000000	        49.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Delete/1000-4   	300000000	        48.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Delete/10000-4  	300000000	        47.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Delete/100000-4 	300000000	        47.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Delete/1000000-4         	200000000	        64.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkHashMap/Delete/10-4                 	50000000	       249 ns/op	      23 B/op	       3 allocs/op
+BenchmarkHashMap/Delete/100-4                	50000000	       247 ns/op	      23 B/op	       3 allocs/op
+BenchmarkHashMap/Delete/1000-4               	50000000	       250 ns/op	      23 B/op	       3 allocs/op
+BenchmarkHashMap/Delete/10000-4              	50000000	       258 ns/op	      23 B/op	       3 allocs/op
+BenchmarkHashMap/Delete/100000-4             	50000000	       303 ns/op	      23 B/op	       3 allocs/op
+BenchmarkHashMap/Delete/1000000-4            	30000000	       351 ns/op	      24 B/op	       3 allocs/op
 ```
 
 ## License
