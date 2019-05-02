@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/thewizardplusplus/go-hashmap/mocks"
 )
 
 func TestSynchronizedHashMap(test *testing.T) {
@@ -20,7 +19,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 			name:        "getting by a nonexistent key",
 			makeHashMap: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
 			makeKey: func() Key {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				return key
@@ -31,7 +30,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 		{
 			name: "setting by a nonexistent key",
 			makeHashMap: func() *SynchronizedHashMap {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 				// it's called inside the HashMap.Get() method below
 				key.On("Equals", mock.Anything).Return(true)
@@ -42,7 +41,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				return hashMap
 			},
 			makeKey: func() Key {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				return key
@@ -53,7 +52,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 		{
 			name: "setting by an existing key",
 			makeHashMap: func() *SynchronizedHashMap {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 				key.On("Equals", mock.Anything).Return(true)
 
@@ -64,7 +63,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				return hashMap
 			},
 			makeKey: func() Key {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				return key
@@ -75,7 +74,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 		{
 			name: "deleting by a nonexistent key",
 			makeHashMap: func() *SynchronizedHashMap {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				hashMap := NewSynchronizedHashMap()
@@ -84,7 +83,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				return hashMap
 			},
 			makeKey: func() Key {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				return key
@@ -95,7 +94,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 		{
 			name: "deleting by an existing key",
 			makeHashMap: func() *SynchronizedHashMap {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 				key.On("Equals", mock.Anything).Return(true)
 
@@ -106,7 +105,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				return hashMap
 			},
 			makeKey: func() Key {
-				key := new(mocks.Key)
+				key := new(MockKey)
 				key.On("Hash").Return(5)
 
 				return key
