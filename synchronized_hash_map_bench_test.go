@@ -2,6 +2,7 @@ package hashmap
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"testing"
 )
@@ -16,7 +17,45 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 		prepare   func() *SynchronizedHashMap
 		benchmark func(hashMap *SynchronizedHashMap)
 	}{
-		// TODO: add benchmark cases
+		{
+			name: "Get",
+			prepare: func() *SynchronizedHashMap {
+				hashMap := NewSynchronizedHashMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+
+				return hashMap
+			},
+			benchmark: func(hashMap *SynchronizedHashMap) {
+				hashMap.Get(IntKey(rand.Intn(sizeForSyncBench)))
+			},
+		},
+		{
+			name:    "Set",
+			prepare: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
+			benchmark: func(hashMap *SynchronizedHashMap) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+			},
+		},
+		{
+			name: "Delete",
+			prepare: func() *SynchronizedHashMap {
+				hashMap := NewSynchronizedHashMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+
+				return hashMap
+			},
+			benchmark: func(hashMap *SynchronizedHashMap) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Delete(IntKey(i))
+				}
+			},
+		},
 	} {
 		for threads := 1; threads <= 1e3; threads *= 10 {
 			name := fmt.Sprintf("%s/%d/%d", data.name, sizeForSyncBench, threads)
