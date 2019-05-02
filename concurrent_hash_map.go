@@ -21,18 +21,20 @@ func NewConcurrentHashMap() ConcurrentHashMap {
 
 // Get ...
 func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
-	index := key.Hash() % len(hashMap.segments)
-	return hashMap.segments[index].Get(key)
+	return hashMap.selectSegment(key).Get(key)
 }
 
 // Set ...
 func (hashMap ConcurrentHashMap) Set(key Key, value interface{}) {
-	index := key.Hash() % len(hashMap.segments)
-	hashMap.segments[index].Set(key, value)
+	hashMap.selectSegment(key).Set(key, value)
 }
 
 // Delete ...
 func (hashMap ConcurrentHashMap) Delete(key Key) (ok bool) {
+	return hashMap.selectSegment(key).Delete(key)
+}
+
+func (hashMap ConcurrentHashMap) selectSegment(key Key) *SynchronizedHashMap {
 	index := key.Hash() % len(hashMap.segments)
-	return hashMap.segments[index].Delete(key)
+	return hashMap.segments[index]
 }
