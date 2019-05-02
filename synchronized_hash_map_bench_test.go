@@ -17,7 +17,45 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 		prepare   func() *sync.Map
 		benchmark func(syncMap *sync.Map)
 	}{
-		// TODO: add benchmark cases
+		{
+			name: "Get",
+			prepare: func() *sync.Map {
+				syncMap := new(sync.Map)
+				for i := 0; i < sizeForSyncBench; i++ {
+					syncMap.Store(i, i)
+				}
+
+				return syncMap
+			},
+			benchmark: func(syncMap *sync.Map) {
+				syncMap.Load(rand.Intn(sizeForSyncBench))
+			},
+		},
+		{
+			name:    "Set",
+			prepare: func() *sync.Map { return new(sync.Map) },
+			benchmark: func(syncMap *sync.Map) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					syncMap.Store(i, i)
+				}
+			},
+		},
+		{
+			name: "Delete",
+			prepare: func() *sync.Map {
+				syncMap := new(sync.Map)
+				for i := 0; i < sizeForSyncBench; i++ {
+					syncMap.Store(i, i)
+				}
+
+				return syncMap
+			},
+			benchmark: func(syncMap *sync.Map) {
+				for i := 0; i < sizeForSyncBench; i++ {
+					syncMap.Delete(i)
+				}
+			},
+		},
 	} {
 		for threads := 1; threads <= 1e3; threads *= 10 {
 			name := fmt.Sprintf("%s/%d/%d", data.name, sizeForSyncBench, threads)
