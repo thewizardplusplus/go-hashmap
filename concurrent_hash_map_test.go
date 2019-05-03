@@ -59,7 +59,7 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return []Key{key}
 			},
-			wantTouchedSegments: map[int]struct{}{5: struct{}{}},
+			wantTouchedSegments: map[int]struct{}{5: {}},
 			wantResults:         []result{{"five", true}},
 		},
 		{
@@ -81,7 +81,7 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return []Key{key}
 			},
-			wantTouchedSegments: map[int]struct{}{5: struct{}{}},
+			wantTouchedSegments: map[int]struct{}{5: {}},
 			wantResults:         []result{{"five #2", true}},
 		},
 		{
@@ -110,7 +110,7 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return []Key{fiveKey, sixKey}
 			},
-			wantTouchedSegments: map[int]struct{}{5: struct{}{}, 6: struct{}{}},
+			wantTouchedSegments: map[int]struct{}{5: {}, 6: {}},
 			wantResults:         []result{{"five", true}, {"six", true}},
 		},
 		{
