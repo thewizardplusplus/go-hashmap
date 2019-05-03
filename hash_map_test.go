@@ -149,7 +149,7 @@ func TestHashMap_Get(test *testing.T) {
 				}
 			}
 			mock.AssertExpectationsForObjects(test, key)
-			assert.Equal(test, gotValue, data.wantValue)
+			assert.Equal(test, data.wantValue, gotValue)
 			data.wantOk(test, gotOk)
 		})
 	}
