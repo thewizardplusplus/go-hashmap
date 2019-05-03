@@ -16,24 +16,29 @@ func TestNewConcurrentHashMap(test *testing.T) {
 }
 
 func TestConcurrentHashMap(test *testing.T) {
+	type result struct {
+		value interface{}
+		ok    bool
+	}
+
 	for _, data := range []struct {
-		name        string
-		makeHashMap func() ConcurrentHashMap
-		makeKey     func() Key
-		wantValue   interface{}
-		wantOk      assert.BoolAssertionFunc
+		name                string
+		makeHashMap         func() ConcurrentHashMap
+		makeKeys            func() []Key
+		wantTouchedSegments map[int]struct{}
+		wantResults         []result
 	}{
 		{
 			name:        "getting by a nonexistent key",
 			makeHashMap: func() ConcurrentHashMap { return NewConcurrentHashMap() },
-			makeKey: func() Key {
+			makeKeys: func() []Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				return key
+				return []Key{key}
 			},
-			wantValue: nil,
-			wantOk:    assert.False,
+			wantTouchedSegments: nil,
+			wantResults:         []result{{nil, false}},
 		},
 		{
 			name: "setting by a nonexistent key",
@@ -48,14 +53,14 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
+			makeKeys: func() []Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				return key
+				return []Key{key}
 			},
-			wantValue: "five",
-			wantOk:    assert.True,
+			wantTouchedSegments: map[int]struct{}{5: struct{}{}},
+			wantResults:         []result{{"five", true}},
 		},
 		{
 			name: "setting by an existing key",
@@ -70,14 +75,14 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
+			makeKeys: func() []Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				return key
+				return []Key{key}
 			},
-			wantValue: "five #2",
-			wantOk:    assert.True,
+			wantTouchedSegments: map[int]struct{}{5: struct{}{}},
+			wantResults:         []result{{"five #2", true}},
 		},
 		{
 			name: "deleting by a nonexistent key",
@@ -90,14 +95,14 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
+			makeKeys: func() []Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				return key
+				return []Key{key}
 			},
-			wantValue: nil,
-			wantOk:    assert.False,
+			wantTouchedSegments: nil,
+			wantResults:         []result{{nil, false}},
 		},
 		{
 			name: "deleting by an existing key",
@@ -112,31 +117,42 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
+			makeKeys: func() []Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				return key
+				return []Key{key}
 			},
-			wantValue: nil,
-			wantOk:    assert.False,
+			wantTouchedSegments: nil,
+			wantResults:         []result{{nil, false}},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			hashMap := data.makeHashMap()
-			key := data.makeKey()
-			gotValue, gotOk := hashMap.Get(key)
+			keys := data.makeKeys()
 
-			for _, segment := range hashMap.segments {
+			var results []result
+			for _, key := range keys {
+				gotValue, gotOk := hashMap.Get(key)
+				results = append(results, result{gotValue, gotOk})
+			}
+
+			for index, segment := range hashMap.segments {
 				for _, bucket := range segment.innerMap.buckets {
 					if bucket != nil {
 						mock.AssertExpectationsForObjects(test, bucket.key)
 					}
 				}
+				if _, ok := data.wantTouchedSegments[index]; ok {
+					assert.NotZero(test, segment.innerMap.size)
+				} else {
+					assert.Zero(test, segment.innerMap.size)
+				}
 			}
-			mock.AssertExpectationsForObjects(test, key)
-			assert.Equal(test, gotValue, data.wantValue)
-			data.wantOk(test, gotOk)
+			for _, key := range keys {
+				mock.AssertExpectationsForObjects(test, key)
+			}
+			assert.Equal(test, data.wantResults, results)
 		})
 	}
 }
