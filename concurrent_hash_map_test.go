@@ -85,6 +85,35 @@ func TestConcurrentHashMap(test *testing.T) {
 			wantResults:         []result{{"five #2", true}},
 		},
 		{
+			name: "setting by keys touched different segments",
+			makeHashMap: func() ConcurrentHashMap {
+				fiveKey := new(MockKey)
+				fiveKey.On("Hash").Return(5)
+				fiveKey.On("Equals", mock.Anything).Return(true)
+
+				sixKey := new(MockKey)
+				sixKey.On("Hash").Return(6)
+				sixKey.On("Equals", mock.Anything).Return(true)
+
+				hashMap := NewConcurrentHashMap()
+				hashMap.Set(fiveKey, "five")
+				hashMap.Set(sixKey, "six")
+
+				return hashMap
+			},
+			makeKeys: func() []Key {
+				fiveKey := new(MockKey)
+				fiveKey.On("Hash").Return(5)
+
+				sixKey := new(MockKey)
+				sixKey.On("Hash").Return(6)
+
+				return []Key{fiveKey, sixKey}
+			},
+			wantTouchedSegments: map[int]struct{}{5: struct{}{}, 6: struct{}{}},
+			wantResults:         []result{{"five", true}, {"six", true}},
+		},
+		{
 			name: "deleting by a nonexistent key",
 			makeHashMap: func() ConcurrentHashMap {
 				key := new(MockKey)
@@ -125,6 +154,37 @@ func TestConcurrentHashMap(test *testing.T) {
 			},
 			wantTouchedSegments: nil,
 			wantResults:         []result{{nil, false}},
+		},
+		{
+			name: "deleting by keys touched different segments",
+			makeHashMap: func() ConcurrentHashMap {
+				fiveKey := new(MockKey)
+				fiveKey.On("Hash").Return(5)
+				fiveKey.On("Equals", mock.Anything).Return(true)
+
+				sixKey := new(MockKey)
+				sixKey.On("Hash").Return(6)
+				sixKey.On("Equals", mock.Anything).Return(true)
+
+				hashMap := NewConcurrentHashMap()
+				hashMap.Set(fiveKey, "five")
+				hashMap.Set(sixKey, "six")
+				hashMap.Delete(fiveKey)
+				hashMap.Delete(sixKey)
+
+				return hashMap
+			},
+			makeKeys: func() []Key {
+				fiveKey := new(MockKey)
+				fiveKey.On("Hash").Return(5)
+
+				sixKey := new(MockKey)
+				sixKey.On("Hash").Return(6)
+
+				return []Key{fiveKey, sixKey}
+			},
+			wantTouchedSegments: nil,
+			wantResults:         []result{{nil, false}, {nil, false}},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
