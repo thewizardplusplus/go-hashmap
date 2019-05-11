@@ -130,3 +130,33 @@ func TestSynchronizedHashMap(test *testing.T) {
 		})
 	}
 }
+
+func TestSynchronizedHashMap_Iterate(test *testing.T) {
+	type fields struct {
+		buckets []*bucket
+	}
+
+	for _, data := range []struct {
+		name        string
+		fields      fields
+		wantBuckets []bucket
+	}{
+		// TODO: add test cases
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			var gotBuckets []bucket
+			innerMap := HashMap{buckets: data.fields.buckets}
+			hashMap := SynchronizedHashMap{innerMap: &innerMap}
+			hashMap.Iterate(func(key Key, value interface{}) {
+				gotBuckets = append(gotBuckets, bucket{key, value})
+			})
+
+			for _, bucket := range hashMap.innerMap.buckets {
+				if bucket != nil {
+					mock.AssertExpectationsForObjects(test, bucket.key)
+				}
+			}
+			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+		})
+	}
+}
