@@ -24,6 +24,19 @@ func (builtinMap *SynchronizedBuiltinMap) Get(key int) int {
 	return builtinMap.innerMap[key]
 }
 
+func (builtinMap *SynchronizedBuiltinMap) Iterate(
+	handler func(key int, value int),
+) {
+	builtinMap.lock.RLock()
+	defer builtinMap.lock.RUnlock()
+
+	for key, value := range builtinMap.innerMap {
+		builtinMap.lock.RUnlock()
+		handler(key, value)
+		builtinMap.lock.RLock()
+	}
+}
+
 func (builtinMap *SynchronizedBuiltinMap) Set(key int, value int) {
 	builtinMap.lock.Lock()
 	defer builtinMap.lock.Unlock()
@@ -60,6 +73,20 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
 				builtinMap.Get(rand.Intn(sizeForSyncBench))
+			},
+		},
+		{
+			name: "Iterate",
+			prepare: func() *SynchronizedBuiltinMap {
+				builtinMap := NewSynchronizedBuiltinMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					builtinMap.Set(i, i)
+				}
+
+				return builtinMap
+			},
+			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
+				builtinMap.Iterate(func(key int, value int) {})
 			},
 		},
 		{
@@ -133,6 +160,20 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 			},
 		},
 		{
+			name: "Iterate",
+			prepare: func() *sync.Map {
+				syncMap := new(sync.Map)
+				for i := 0; i < sizeForSyncBench; i++ {
+					syncMap.Store(i, i)
+				}
+
+				return syncMap
+			},
+			benchmark: func(syncMap *sync.Map) {
+				syncMap.Range(func(key interface{}, value interface{}) bool { return true })
+			},
+		},
+		{
 			name:    "Set",
 			prepare: func() *sync.Map { return new(sync.Map) },
 			benchmark: func(syncMap *sync.Map) {
@@ -198,6 +239,20 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
 				hashMap.Get(IntKey(rand.Intn(sizeForSyncBench)))
+			},
+		},
+		{
+			name: "Iterate",
+			prepare: func() *SynchronizedHashMap {
+				hashMap := NewSynchronizedHashMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+
+				return hashMap
+			},
+			benchmark: func(hashMap *SynchronizedHashMap) {
+				hashMap.Iterate(func(key Key, value interface{}) {})
 			},
 		},
 		{
