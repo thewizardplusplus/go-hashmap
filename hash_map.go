@@ -40,6 +40,15 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.buckets[index].value, true
 }
 
+// Iterate ...
+func (hashMap HashMap) Iterate(handler func(key Key, value interface{})) {
+	for _, bucket := range hashMap.buckets {
+		if bucket != nil {
+			handler(bucket.key, bucket.value)
+		}
+	}
+}
+
 // Set ...
 func (hashMap *HashMap) Set(key Key, value interface{}) {
 	index, ok := hashMap.find(key)
@@ -83,11 +92,7 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 
 func (hashMap *HashMap) rehash() {
 	newHashMap := newHashMapWithCapacity(len(hashMap.buckets) * growFactor)
-	for _, bucket := range hashMap.buckets {
-		if bucket != nil {
-			newHashMap.Set(bucket.key, bucket.value)
-		}
-	}
+	hashMap.Iterate(newHashMap.Set)
 
 	*hashMap = *newHashMap
 }
