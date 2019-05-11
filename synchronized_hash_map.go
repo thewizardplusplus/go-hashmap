@@ -23,6 +23,21 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.innerMap.Get(key)
 }
 
+// Iterate ...
+func (hashMap *SynchronizedHashMap) Iterate(
+	handler func(key Key, value interface{}),
+) {
+	hashMap.lock.RLock()
+	defer hashMap.lock.RUnlock()
+
+	hashMap.innerMap.Iterate(func(key Key, value interface{}) {
+		hashMap.lock.RUnlock()
+		defer hashMap.lock.RLock()
+
+		handler(key, value)
+	})
+}
+
 // Set ...
 func (hashMap *SynchronizedHashMap) Set(key Key, value interface{}) {
 	hashMap.lock.Lock()
