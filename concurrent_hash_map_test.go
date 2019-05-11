@@ -216,3 +216,41 @@ func TestConcurrentHashMap(test *testing.T) {
 		})
 	}
 }
+
+func TestConcurrentHashMap_Iterate(test *testing.T) {
+	type fields struct {
+		buckets [][]*bucket
+	}
+
+	for _, data := range []struct {
+		name        string
+		fields      fields
+		wantBuckets []bucket
+	}{
+		// TODO: add test cases
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			var segments []*SynchronizedHashMap
+			for _, buckets := range data.fields.buckets {
+				innerMap := &HashMap{buckets: buckets}
+				segment := &SynchronizedHashMap{innerMap: innerMap}
+				segments = append(segments, segment)
+			}
+
+			var gotBuckets []bucket
+			hashMap := ConcurrentHashMap{segments: segments}
+			hashMap.Iterate(func(key Key, value interface{}) {
+				gotBuckets = append(gotBuckets, bucket{key, value})
+			})
+
+			for _, segment := range hashMap.segments {
+				for _, bucket := range segment.innerMap.buckets {
+					if bucket != nil {
+						mock.AssertExpectationsForObjects(test, bucket.key)
+					}
+				}
+			}
+			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+		})
+	}
+}
