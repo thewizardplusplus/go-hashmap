@@ -28,6 +28,20 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			},
 		},
 		{
+			name: "Iterate",
+			prepare: func() ConcurrentHashMap {
+				hashMap := NewConcurrentHashMap()
+				for i := 0; i < sizeForSyncBench; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+
+				return hashMap
+			},
+			benchmark: func(hashMap ConcurrentHashMap) {
+				hashMap.Iterate(func(key Key, value interface{}) {})
+			},
+		},
+		{
 			name:    "Set",
 			prepare: func() ConcurrentHashMap { return NewConcurrentHashMap() },
 			benchmark: func(hashMap ConcurrentHashMap) {
