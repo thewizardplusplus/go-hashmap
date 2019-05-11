@@ -227,7 +227,48 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 		fields      fields
 		wantBuckets []bucket
 	}{
-		// TODO: add test cases
+		{
+			name: "without buckets",
+			fields: fields{
+				buckets: [][]*bucket{
+					make([]*bucket, initialCapacity),
+					make([]*bucket, initialCapacity),
+				},
+			},
+			wantBuckets: nil,
+		},
+		{
+			name: "with few buckets in the same segment",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {
+						5: {key: new(MockKey), value: "five #1"},
+						6: {key: new(MockKey), value: "five #2"},
+						7: {key: new(MockKey), value: "five #3"},
+					},
+				},
+			},
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five #1"},
+				{key: new(MockKey), value: "five #2"},
+				{key: new(MockKey), value: "five #3"},
+			},
+		},
+		{
+			name: "with few buckets in different segments",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {5: {key: new(MockKey), value: "five"}},
+					6: {6: {key: new(MockKey), value: "six"}},
+					7: {7: {key: new(MockKey), value: "seven"}},
+				},
+			},
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five"},
+				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "seven"},
+			},
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			var segments []*SynchronizedHashMap
