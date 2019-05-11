@@ -8,6 +8,9 @@ type Key interface {
 	Equals(key interface{}) bool
 }
 
+// Handler ...
+type Handler func(key Key, value interface{})
+
 type bucket struct {
 	key   Key
 	value interface{}
@@ -41,7 +44,7 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
-func (hashMap HashMap) Iterate(handler func(key Key, value interface{})) {
+func (hashMap HashMap) Iterate(handler Handler) {
 	for _, bucket := range hashMap.buckets {
 		if bucket != nil {
 			handler(bucket.key, bucket.value)

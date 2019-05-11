@@ -24,9 +24,7 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
-func (hashMap *SynchronizedHashMap) Iterate(
-	handler func(key Key, value interface{}),
-) {
+func (hashMap *SynchronizedHashMap) Iterate(handler Handler) {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
 
