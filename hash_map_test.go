@@ -165,7 +165,26 @@ func TestHashMap_Iterate(test *testing.T) {
 		fields      fields
 		wantBuckets []bucket
 	}{
-		// TODO: add test cases
+		{
+			name:        "without buckets",
+			fields:      fields{buckets: make([]*bucket, initialCapacity)},
+			wantBuckets: nil,
+		},
+		{
+			name: "with few buckets",
+			fields: fields{
+				buckets: []*bucket{
+					5: {key: new(MockKey), value: "five"},
+					6: {key: new(MockKey), value: "six"},
+					7: {key: new(MockKey), value: "seven"},
+				},
+			},
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five"},
+				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "seven"},
+			},
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			var gotBuckets []bucket
