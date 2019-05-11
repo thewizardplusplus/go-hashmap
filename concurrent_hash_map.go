@@ -24,6 +24,15 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.selectSegment(key).Get(key)
 }
 
+// Iterate ...
+func (hashMap ConcurrentHashMap) Iterate(
+	handler func(key Key, value interface{}),
+) {
+	for _, segment := range hashMap.segments {
+		segment.Iterate(handler)
+	}
+}
+
 // Set ...
 func (hashMap ConcurrentHashMap) Set(key Key, value interface{}) {
 	hashMap.selectSegment(key).Set(key, value)
