@@ -284,8 +284,8 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 			})
 
-			for _, segment := range hashMap.segments {
-				for _, bucket := range segment.innerMap.buckets {
+			for _, buckets := range data.fields.buckets {
+				for _, bucket := range buckets {
 					if bucket != nil {
 						mock.AssertExpectationsForObjects(test, bucket.key)
 					}

@@ -170,7 +170,7 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 			})
 
-			for _, bucket := range hashMap.innerMap.buckets {
+			for _, bucket := range data.fields.buckets {
 				if bucket != nil {
 					mock.AssertExpectationsForObjects(test, bucket.key)
 				}
