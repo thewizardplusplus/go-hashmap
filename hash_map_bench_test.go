@@ -42,6 +42,21 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 			},
 		},
 		{
+			name: "Iterate",
+			prepare: func(size int) map[int]int {
+				builtinMap := make(map[int]int)
+				for i := 0; i < size; i++ {
+					builtinMap[i] = i
+				}
+
+				return builtinMap
+			},
+			benchmark: func(size int, builtinMap map[int]int) {
+				for range builtinMap {
+				}
+			},
+		},
+		{
 			name:    "Set",
 			prepare: func(size int) map[int]int { return make(map[int]int) },
 			benchmark: func(size int, builtinMap map[int]int) {
@@ -97,6 +112,20 @@ func BenchmarkHashMap(benchmark *testing.B) {
 			},
 			benchmark: func(size int, hashMap *HashMap) {
 				hashMap.Get(IntKey(rand.Intn(size)))
+			},
+		},
+		{
+			name: "Iterate",
+			prepare: func(size int) *HashMap {
+				hashMap := NewHashMap()
+				for i := 0; i < size; i++ {
+					hashMap.Set(IntKey(i), i)
+				}
+
+				return hashMap
+			},
+			benchmark: func(size int, hashMap *HashMap) {
+				hashMap.Iterate(func(key Key, value interface{}) {})
 			},
 		},
 		{
