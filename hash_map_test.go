@@ -155,6 +155,35 @@ func TestHashMap_Get(test *testing.T) {
 	}
 }
 
+func TestHashMap_Iterate(test *testing.T) {
+	type fields struct {
+		buckets []*bucket
+	}
+
+	for _, data := range []struct {
+		name        string
+		fields      fields
+		wantBuckets []bucket
+	}{
+		// TODO: add test cases
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			var gotBuckets []bucket
+			hashMap := HashMap{buckets: data.fields.buckets}
+			hashMap.Iterate(func(key Key, value interface{}) {
+				gotBuckets = append(gotBuckets, bucket{key, value})
+			})
+
+			for _, bucket := range data.fields.buckets {
+				if bucket != nil {
+					mock.AssertExpectationsForObjects(test, bucket.key)
+				}
+			}
+			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+		})
+	}
+}
+
 func TestHashMap_Set(test *testing.T) {
 	type fields struct {
 		makeBuckets func() []*bucket
