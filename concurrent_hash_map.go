@@ -25,10 +25,14 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
-func (hashMap ConcurrentHashMap) Iterate(handler Handler) {
+func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
 	for _, segment := range hashMap.segments {
-		segment.Iterate(handler)
+		if ok := segment.Iterate(handler); !ok {
+			return false
+		}
 	}
+
+	return true
 }
 
 // Set ...
