@@ -137,17 +137,21 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 	}
 
 	for _, data := range []struct {
-		name        string
-		fields      fields
-		wantBuckets []bucket
+		name             string
+		fields           fields
+		interruptOnCount int
+		wantBuckets      []bucket
+		wantOk           assert.BoolAssertionFunc
 	}{
 		{
-			name:        "without buckets",
-			fields:      fields{buckets: make([]*bucket, initialCapacity)},
-			wantBuckets: nil,
+			name:             "without buckets",
+			fields:           fields{buckets: make([]*bucket, initialCapacity)},
+			interruptOnCount: 10,
+			wantBuckets:      nil,
+			wantOk:           assert.True,
 		},
 		{
-			name: "with few buckets",
+			name: "with few buckets and without an interrupt",
 			fields: fields{
 				buckets: []*bucket{
 					5: {key: new(MockKey), value: "five"},
@@ -155,20 +159,39 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 					7: {key: new(MockKey), value: "seven"},
 				},
 			},
+			interruptOnCount: 10,
 			wantBuckets: []bucket{
 				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "seven"},
 			},
+			wantOk: assert.True,
+		},
+		{
+			name: "with few buckets and with an interrupt",
+			fields: fields{
+				buckets: []*bucket{
+					5: {key: new(MockKey), value: "five"},
+					6: {key: new(MockKey), value: "six"},
+					7: {key: new(MockKey), value: "seven"},
+				},
+			},
+			interruptOnCount: 2,
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five"},
+				{key: new(MockKey), value: "six"},
+			},
+			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			var gotBuckets []bucket
 			innerMap := HashMap{buckets: data.fields.buckets}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
-			hashMap.Iterate(func(key Key, value interface{}) bool {
+			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
-				return true
+				// interrupt after a specified count of got buckets
+				return len(gotBuckets) < data.interruptOnCount
 			})
 
 			for _, bucket := range data.fields.buckets {
@@ -177,6 +200,7 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				}
 			}
 			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+			data.wantOk(test, gotOk)
 		})
 	}
 }
