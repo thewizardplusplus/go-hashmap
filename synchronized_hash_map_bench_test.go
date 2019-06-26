@@ -25,16 +25,21 @@ func (builtinMap *SynchronizedBuiltinMap) Get(key int) int {
 }
 
 func (builtinMap *SynchronizedBuiltinMap) Iterate(
-	handler func(key int, value int),
-) {
+	handler func(key int, value int) bool,
+) bool {
 	builtinMap.lock.RLock()
 	defer builtinMap.lock.RUnlock()
 
 	for key, value := range builtinMap.innerMap {
 		builtinMap.lock.RUnlock()
-		handler(key, value)
+		ok := handler(key, value)
 		builtinMap.lock.RLock()
+		if !ok {
+			return false
+		}
 	}
+
+	return true
 }
 
 func (builtinMap *SynchronizedBuiltinMap) Set(key int, value int) {
@@ -86,7 +91,7 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
-				builtinMap.Iterate(func(key int, value int) {})
+				builtinMap.Iterate(func(key int, value int) bool { return true })
 			},
 		},
 		{
