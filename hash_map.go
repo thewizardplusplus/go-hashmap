@@ -44,12 +44,18 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
-func (hashMap HashMap) Iterate(handler Handler) {
+func (hashMap HashMap) Iterate(handler Handler) bool {
 	for _, bucket := range hashMap.buckets {
-		if bucket != nil {
-			handler(bucket.key, bucket.value)
+		if bucket == nil {
+			continue
+		}
+
+		if ok := handler(bucket.key, bucket.value); !ok {
+			return false
 		}
 	}
+
+	return true
 }
 
 // Set ...
