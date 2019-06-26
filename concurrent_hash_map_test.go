@@ -280,8 +280,9 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 
 			var gotBuckets []bucket
 			hashMap := ConcurrentHashMap{segments: segments}
-			hashMap.Iterate(func(key Key, value interface{}) {
+			hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
+				return true
 			})
 
 			for _, buckets := range data.fields.buckets {

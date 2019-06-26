@@ -28,11 +28,11 @@ func (hashMap *SynchronizedHashMap) Iterate(handler Handler) {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
 
-	hashMap.innerMap.Iterate(func(key Key, value interface{}) {
+	hashMap.innerMap.Iterate(func(key Key, value interface{}) bool {
 		hashMap.lock.RUnlock()
 		defer hashMap.lock.RLock()
 
-		handler(key, value)
+		return handler(key, value)
 	})
 }
 

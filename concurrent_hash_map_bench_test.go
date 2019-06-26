@@ -38,7 +38,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap ConcurrentHashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) {})
+				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
 			},
 		},
 		{

@@ -166,8 +166,9 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 			var gotBuckets []bucket
 			innerMap := HashMap{buckets: data.fields.buckets}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
-			hashMap.Iterate(func(key Key, value interface{}) {
+			hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
+				return true
 			})
 
 			for _, bucket := range data.fields.buckets {

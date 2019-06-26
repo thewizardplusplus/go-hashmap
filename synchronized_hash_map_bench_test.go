@@ -252,7 +252,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) {})
+				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
 			},
 		},
 		{

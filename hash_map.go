@@ -9,7 +9,7 @@ type Key interface {
 }
 
 // Handler ...
-type Handler func(key Key, value interface{})
+type Handler func(key Key, value interface{}) bool
 
 type bucket struct {
 	key   Key
@@ -95,7 +95,10 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 
 func (hashMap *HashMap) rehash() {
 	newHashMap := newHashMapWithCapacity(len(hashMap.buckets) * growFactor)
-	hashMap.Iterate(newHashMap.Set)
+	hashMap.Iterate(func(key Key, value interface{}) bool {
+		newHashMap.Set(key, value)
+		return true
+	})
 
 	*hashMap = *newHashMap
 }

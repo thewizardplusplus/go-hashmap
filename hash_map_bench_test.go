@@ -125,7 +125,7 @@ func BenchmarkHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(size int, hashMap *HashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) {})
+				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
 			},
 		},
 		{

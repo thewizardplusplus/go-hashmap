@@ -189,8 +189,9 @@ func TestHashMap_Iterate(test *testing.T) {
 		test.Run(data.name, func(test *testing.T) {
 			var gotBuckets []bucket
 			hashMap := HashMap{buckets: data.fields.buckets}
-			hashMap.Iterate(func(key Key, value interface{}) {
+			hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
+				return true
 			})
 
 			for _, bucket := range data.fields.buckets {
