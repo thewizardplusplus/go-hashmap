@@ -24,11 +24,11 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
-func (hashMap *SynchronizedHashMap) Iterate(handler Handler) {
+func (hashMap *SynchronizedHashMap) Iterate(handler Handler) bool {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
 
-	hashMap.innerMap.Iterate(func(key Key, value interface{}) bool {
+	return hashMap.innerMap.Iterate(func(key Key, value interface{}) bool {
 		hashMap.lock.RUnlock()
 		defer hashMap.lock.RLock()
 
