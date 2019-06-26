@@ -223,9 +223,11 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 	}
 
 	for _, data := range []struct {
-		name        string
-		fields      fields
-		wantBuckets []bucket
+		name             string
+		fields           fields
+		interruptOnCount int
+		wantBuckets      []bucket
+		wantOk           assert.BoolAssertionFunc
 	}{
 		{
 			name: "without buckets",
@@ -235,10 +237,12 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 					make([]*bucket, initialCapacity),
 				},
 			},
-			wantBuckets: nil,
+			interruptOnCount: 10,
+			wantBuckets:      nil,
+			wantOk:           assert.True,
 		},
 		{
-			name: "with few buckets in the same segment",
+			name: "with few buckets in the same segment and without an interrupt",
 			fields: fields{
 				buckets: [][]*bucket{
 					5: {
@@ -248,14 +252,34 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 					},
 				},
 			},
+			interruptOnCount: 10,
 			wantBuckets: []bucket{
 				{key: new(MockKey), value: "five #1"},
 				{key: new(MockKey), value: "five #2"},
 				{key: new(MockKey), value: "five #3"},
 			},
+			wantOk: assert.True,
 		},
 		{
-			name: "with few buckets in different segments",
+			name: "with few buckets in the same segment and with an interrupt",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {
+						5: {key: new(MockKey), value: "five #1"},
+						6: {key: new(MockKey), value: "five #2"},
+						7: {key: new(MockKey), value: "five #3"},
+					},
+				},
+			},
+			interruptOnCount: 2,
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five #1"},
+				{key: new(MockKey), value: "five #2"},
+			},
+			wantOk: assert.False,
+		},
+		{
+			name: "with few buckets in different segments and without an interrupt",
 			fields: fields{
 				buckets: [][]*bucket{
 					5: {5: {key: new(MockKey), value: "five"}},
@@ -263,11 +287,29 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 					7: {7: {key: new(MockKey), value: "seven"}},
 				},
 			},
+			interruptOnCount: 10,
 			wantBuckets: []bucket{
 				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "seven"},
 			},
+			wantOk: assert.True,
+		},
+		{
+			name: "with few buckets in different segments and with an interrupt",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {5: {key: new(MockKey), value: "five"}},
+					6: {6: {key: new(MockKey), value: "six"}},
+					7: {7: {key: new(MockKey), value: "seven"}},
+				},
+			},
+			interruptOnCount: 2,
+			wantBuckets: []bucket{
+				{key: new(MockKey), value: "five"},
+				{key: new(MockKey), value: "six"},
+			},
+			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
@@ -280,9 +322,10 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 
 			var gotBuckets []bucket
 			hashMap := ConcurrentHashMap{segments: segments}
-			hashMap.Iterate(func(key Key, value interface{}) bool {
+			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
-				return true
+				// interrupt after a specified count of got buckets
+				return len(gotBuckets) < data.interruptOnCount
 			})
 
 			for _, buckets := range data.fields.buckets {
@@ -293,6 +336,7 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 				}
 			}
 			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+			data.wantOk(test, gotOk)
 		})
 	}
 }
