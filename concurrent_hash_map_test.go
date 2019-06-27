@@ -1,6 +1,7 @@
 package hashmap
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -254,9 +255,9 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #1"},
-				{key: new(MockKey), value: "five #2"},
 				{key: new(MockKey), value: "five #3"},
+				{key: new(MockKey), value: "five #2"},
+				{key: new(MockKey), value: "five #1"},
 			},
 			wantOk: assert.True,
 		},
@@ -273,7 +274,7 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 2,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #1"},
+				{key: new(MockKey), value: "five #3"},
 				{key: new(MockKey), value: "five #2"},
 			},
 			wantOk: assert.False,
@@ -313,6 +314,9 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
+			// reset the random generator to make tests deterministic
+			rand.Seed(1)
+
 			var segments []*SynchronizedHashMap
 			for _, buckets := range data.fields.buckets {
 				innerMap := &HashMap{buckets: buckets}
@@ -335,7 +339,7 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 					}
 				}
 			}
-			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+			assert.Equal(test, data.wantBuckets, gotBuckets)
 			data.wantOk(test, gotOk)
 		})
 	}
