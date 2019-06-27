@@ -209,6 +209,9 @@ func TestHashMap_Iterate(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
+			// reset the random generator to make tests deterministic
+			rand.Seed(1)
+
 			var gotBuckets []bucket
 			hashMap := HashMap{buckets: data.fields.buckets}
 			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
@@ -222,7 +225,7 @@ func TestHashMap_Iterate(test *testing.T) {
 					mock.AssertExpectationsForObjects(test, bucket.key)
 				}
 			}
-			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+			assert.Equal(test, data.wantBuckets, gotBuckets)
 			data.wantOk(test, gotOk)
 		})
 	}
