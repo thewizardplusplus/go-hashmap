@@ -344,3 +344,104 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 		})
 	}
 }
+
+func TestConcurrentHashMap_Iterate_order(test *testing.T) {
+	type fields struct {
+		buckets [][]*bucket
+	}
+
+	for _, data := range []struct {
+		name           string
+		fields         fields
+		randomSeedOne  int64
+		randomSeedTwo  int64
+		wantBucketsOne []bucket
+		wantBucketsTwo []bucket
+	}{
+		{
+			name: "with few buckets in the same segment",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {
+						5: {key: new(MockKey), value: "five #1"},
+						6: {key: new(MockKey), value: "five #2"},
+						7: {key: new(MockKey), value: "five #3"},
+					},
+				},
+			},
+			randomSeedOne: 1,
+			randomSeedTwo: 2,
+			wantBucketsOne: []bucket{
+				{key: new(MockKey), value: "five #3"},
+				{key: new(MockKey), value: "five #2"},
+				{key: new(MockKey), value: "five #1"},
+			},
+			wantBucketsTwo: []bucket{
+				{key: new(MockKey), value: "five #3"},
+				{key: new(MockKey), value: "five #2"},
+				{key: new(MockKey), value: "five #1"},
+			},
+		},
+		{
+			name: "with few buckets in different segments",
+			fields: fields{
+				buckets: [][]*bucket{
+					5: {5: {key: new(MockKey), value: "five"}},
+					6: {6: {key: new(MockKey), value: "six"}},
+					7: {7: {key: new(MockKey), value: "seven"}},
+				},
+			},
+			randomSeedOne: 1,
+			randomSeedTwo: 2,
+			wantBucketsOne: []bucket{
+				{key: new(MockKey), value: "five"},
+				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "seven"},
+			},
+			wantBucketsTwo: []bucket{
+				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "seven"},
+				{key: new(MockKey), value: "five"},
+			},
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			var segments []*SynchronizedHashMap
+			for _, buckets := range data.fields.buckets {
+				innerMap := &HashMap{buckets: buckets}
+				segment := &SynchronizedHashMap{innerMap: innerMap}
+				segments = append(segments, segment)
+			}
+
+			hashMap := ConcurrentHashMap{segments: segments}
+
+			var gotBucketsOne []bucket
+			rand.Seed(data.randomSeedOne)
+			gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
+				gotBucketsOne = append(gotBucketsOne, bucket{key, value})
+				return true
+			})
+
+			var gotBucketsTwo []bucket
+			rand.Seed(data.randomSeedTwo)
+			gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
+				gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
+				return true
+			})
+
+			for _, buckets := range data.fields.buckets {
+				for _, bucket := range buckets {
+					if bucket != nil {
+						mock.AssertExpectationsForObjects(test, bucket.key)
+					}
+				}
+			}
+
+			assert.Equal(test, data.wantBucketsOne, gotBucketsOne)
+			assert.True(test, gotOkOne)
+
+			assert.Equal(test, data.wantBucketsTwo, gotBucketsTwo)
+			assert.True(test, gotOkTwo)
+		})
+	}
+}
