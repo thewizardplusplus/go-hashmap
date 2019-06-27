@@ -1,5 +1,9 @@
 package hashmap
 
+import (
+	"math/rand"
+)
+
 //go:generate mockery -name=Key -inpkg -case=underscore -testonly
 
 // Key ...
@@ -45,7 +49,8 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 
 // Iterate ...
 func (hashMap HashMap) Iterate(handler Handler) bool {
-	for _, bucket := range hashMap.buckets {
+	for _, index := range rand.Perm(len(hashMap.buckets)) {
+		bucket := hashMap.buckets[index]
 		if bucket == nil {
 			continue
 		}
