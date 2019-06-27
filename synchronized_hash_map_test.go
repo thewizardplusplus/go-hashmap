@@ -1,6 +1,7 @@
 package hashmap
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -185,6 +186,9 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
+			// reset the random generator to make tests deterministic
+			rand.Seed(1)
+
 			var gotBuckets []bucket
 			innerMap := HashMap{buckets: data.fields.buckets}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
@@ -199,7 +203,7 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 					mock.AssertExpectationsForObjects(test, bucket.key)
 				}
 			}
-			assert.ElementsMatch(test, data.wantBuckets, gotBuckets)
+			assert.Equal(test, data.wantBuckets, gotBuckets)
 			data.wantOk(test, gotOk)
 		})
 	}
