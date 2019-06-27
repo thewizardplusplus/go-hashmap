@@ -1,5 +1,9 @@
 package hashmap
 
+import (
+	"math/rand"
+)
+
 // ConcurrentHashMap ...
 type ConcurrentHashMap struct {
 	segments []*SynchronizedHashMap
@@ -26,7 +30,8 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 
 // Iterate ...
 func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
-	for _, segment := range hashMap.segments {
+	for _, index := range rand.Perm(len(hashMap.segments)) {
+		segment := hashMap.segments[index]
 		if ok := segment.Iterate(handler); !ok {
 			return false
 		}
