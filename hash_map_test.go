@@ -231,6 +231,52 @@ func TestHashMap_Iterate(test *testing.T) {
 	}
 }
 
+func TestHashMap_Iterate_order(test *testing.T) {
+	hashMap := HashMap{
+		buckets: []*bucket{
+			5: {key: new(MockKey), value: "five"},
+			6: {key: new(MockKey), value: "six"},
+			7: {key: new(MockKey), value: "seven"},
+		},
+	}
+
+	var gotBucketsOne []bucket
+	rand.Seed(1)
+	gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
+		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
+		return true
+	})
+
+	var gotBucketsTwo []bucket
+	rand.Seed(2)
+	gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
+		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
+		return true
+	})
+
+	for _, bucket := range hashMap.buckets {
+		if bucket != nil {
+			mock.AssertExpectationsForObjects(test, bucket.key)
+		}
+	}
+
+	wantBucketsOne := []bucket{
+		{key: new(MockKey), value: "five"},
+		{key: new(MockKey), value: "six"},
+		{key: new(MockKey), value: "seven"},
+	}
+	assert.Equal(test, wantBucketsOne, gotBucketsOne)
+	assert.True(test, gotOkOne)
+
+	wantBucketsTwo := []bucket{
+		{key: new(MockKey), value: "six"},
+		{key: new(MockKey), value: "seven"},
+		{key: new(MockKey), value: "five"},
+	}
+	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)
+	assert.True(test, gotOkTwo)
+}
+
 func TestHashMap_Set(test *testing.T) {
 	type fields struct {
 		makeBuckets func() []*bucket
