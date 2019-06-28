@@ -72,6 +72,25 @@ BenchmarkConcurrentHashMap/Get/1000/1000-4      	   20000	    638640 ns/op	   40
 ```
 
 ```
+BenchmarkSynchronizedBuiltinMap/Iterate/1000/1-4    	  300000	     42922 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Iterate/1000/10-4   	   30000	    445263 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Iterate/1000/100-4  	    3000	   4047902 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedBuiltinMap/Iterate/1000/1000-4 	     300	  40699462 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Iterate/1000/1-4                   	  500000	     32798 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Iterate/1000/10-4                  	  100000	    192020 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Iterate/1000/100-4                 	   10000	   1486500 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSyncMap/Iterate/1000/1000-4                	    1000	  14725244 ns/op	      16 B/op	       1 allocs/op
+BenchmarkSynchronizedHashMap/Iterate/1000/1-4       	  100000	    207407 ns/op	   16400 B/op	       2 allocs/op
+BenchmarkSynchronizedHashMap/Iterate/1000/10-4      	    3000	   4468235 ns/op	  163871 B/op	      11 allocs/op
+BenchmarkSynchronizedHashMap/Iterate/1000/100-4     	     300	  45543225 ns/op	 1643317 B/op	     174 allocs/op
+BenchmarkSynchronizedHashMap/Iterate/1000/1000-4    	      50	 351090497 ns/op	16484443 B/op	    2394 allocs/op
+BenchmarkConcurrentHashMap/Iterate/1000/1-4         	  100000	    205957 ns/op	   16528 B/op	      18 allocs/op
+BenchmarkConcurrentHashMap/Iterate/1000/10-4        	    5000	   3937290 ns/op	  165158 B/op	     171 allocs/op
+BenchmarkConcurrentHashMap/Iterate/1000/100-4       	     300	  41970197 ns/op	 1651729 B/op	    1707 allocs/op
+BenchmarkConcurrentHashMap/Iterate/1000/1000-4      	      30	 412794971 ns/op	16609136 B/op	   18373 allocs/op
+```
+
+```
 BenchmarkSynchronizedBuiltinMap/Set/1000/1-4    	  100000	    118490 ns/op	      16 B/op	       1 allocs/op
 BenchmarkSynchronizedBuiltinMap/Set/1000/10-4   	    5000	   4004046 ns/op	      34 B/op	       1 allocs/op
 BenchmarkSynchronizedBuiltinMap/Set/1000/100-4  	     300	  41541398 ns/op	     359 B/op	       1 allocs/op
@@ -124,6 +143,21 @@ BenchmarkHashMap/Get/1000-4          	 50000000	       275 ns/op	      23 B/op	 
 BenchmarkHashMap/Get/10000-4         	 50000000	       340 ns/op	      23 B/op	       3 allocs/op
 BenchmarkHashMap/Get/100000-4        	 30000000	       564 ns/op	      23 B/op	       3 allocs/op
 BenchmarkHashMap/Get/1000000-4       	 20000000	       662 ns/op	      23 B/op	       3 allocs/op
+```
+
+```
+BenchmarkBuiltinMap/Iterate/10-4         	50000000	       294 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Iterate/100-4        	10000000	      2314 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Iterate/1000-4       	  500000	     25152 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Iterate/10000-4      	  100000	    234488 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Iterate/100000-4     	   10000	   2308275 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBuiltinMap/Iterate/1000000-4    	     500	  27197563 ns/op	       0 B/op	       0 allocs/op
+BenchmarkHashMap/Iterate/10-4            	20000000	      1068 ns/op	     128 B/op	       1 allocs/op
+BenchmarkHashMap/Iterate/100-4           	 1000000	     15677 ns/op	    2048 B/op	       1 allocs/op
+BenchmarkHashMap/Iterate/1000-4          	  100000	    128244 ns/op	   16384 B/op	       1 allocs/op
+BenchmarkHashMap/Iterate/10000-4         	   10000	   1153831 ns/op	  131072 B/op	       1 allocs/op
+BenchmarkHashMap/Iterate/100000-4        	    1000	  23338095 ns/op	 2097154 B/op	       1 allocs/op
+BenchmarkHashMap/Iterate/1000000-4       	      50	 369991586 ns/op	16777216 B/op	       1 allocs/op
 ```
 
 ```
