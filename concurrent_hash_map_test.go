@@ -199,15 +199,16 @@ func TestConcurrentHashMap(test *testing.T) {
 			}
 
 			for index, segment := range hashMap.segments {
-				for _, bucket := range segment.innerMap.buckets {
+				innerMap := segment.(*SynchronizedHashMap).innerMap
+				for _, bucket := range innerMap.buckets {
 					if bucket != nil {
 						mock.AssertExpectationsForObjects(test, bucket.key)
 					}
 				}
 				if _, ok := data.wantTouchedSegments[index]; ok {
-					assert.NotZero(test, segment.innerMap.size)
+					assert.NotZero(test, innerMap.size)
 				} else {
-					assert.Zero(test, segment.innerMap.size)
+					assert.Zero(test, innerMap.size)
 				}
 			}
 			for _, key := range keys {
@@ -317,7 +318,7 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			// reset the random generator to make tests deterministic
 			rand.Seed(1)
 
-			var segments []*SynchronizedHashMap
+			var segments []Storage
 			for _, buckets := range data.fields.buckets {
 				innerMap := &HashMap{buckets: buckets}
 				segment := &SynchronizedHashMap{innerMap: innerMap}
@@ -406,7 +407,7 @@ func TestConcurrentHashMap_Iterate_order(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			var segments []*SynchronizedHashMap
+			var segments []Storage
 			for _, buckets := range data.fields.buckets {
 				innerMap := &HashMap{buckets: buckets}
 				segment := &SynchronizedHashMap{innerMap: innerMap}

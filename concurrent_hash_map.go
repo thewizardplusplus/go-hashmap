@@ -6,7 +6,7 @@ import (
 
 // ConcurrentHashMap ...
 type ConcurrentHashMap struct {
-	segments []*SynchronizedHashMap
+	segments []Storage
 }
 
 const (
@@ -15,7 +15,7 @@ const (
 
 // NewConcurrentHashMap ...
 func NewConcurrentHashMap() ConcurrentHashMap {
-	var segments []*SynchronizedHashMap
+	var segments []Storage
 	for i := 0; i < concurrencyLevel; i++ {
 		segments = append(segments, NewSynchronizedHashMap())
 	}
@@ -50,7 +50,7 @@ func (hashMap ConcurrentHashMap) Delete(key Key) {
 	hashMap.selectSegment(key).Delete(key)
 }
 
-func (hashMap ConcurrentHashMap) selectSegment(key Key) *SynchronizedHashMap {
+func (hashMap ConcurrentHashMap) selectSegment(key Key) Storage {
 	index := key.Hash() % len(hashMap.segments)
 	return hashMap.segments[index]
 }
