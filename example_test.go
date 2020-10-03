@@ -20,7 +20,7 @@ func (key StringKey) Equals(other interface{}) bool {
 }
 
 func Example() {
-	timeZones := NewConcurrentHashMap(func() Storage {
+	timeZones := NewConcurrentHashMap(16, func() Storage {
 		return NewSynchronizedHashMap()
 	})
 	timeZones.Set(StringKey("EST"), -5*60*60)

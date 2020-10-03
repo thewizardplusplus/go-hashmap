@@ -12,12 +12,11 @@ type ConcurrentHashMap struct {
 	segments []Storage
 }
 
-const (
-	concurrencyLevel = 16
-)
-
 // NewConcurrentHashMap ...
-func NewConcurrentHashMap(factory StorageFactory) ConcurrentHashMap {
+func NewConcurrentHashMap(
+	concurrencyLevel int,
+	factory StorageFactory,
+) ConcurrentHashMap {
 	var segments []Storage
 	for i := 0; i < concurrencyLevel; i++ {
 		segment := factory()
