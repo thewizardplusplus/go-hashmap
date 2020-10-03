@@ -4,6 +4,9 @@ import (
 	"math/rand"
 )
 
+// StorageFactory ...
+type StorageFactory func() Storage
+
 // ConcurrentHashMap ...
 type ConcurrentHashMap struct {
 	segments []Storage
