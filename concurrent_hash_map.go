@@ -17,10 +17,11 @@ const (
 )
 
 // NewConcurrentHashMap ...
-func NewConcurrentHashMap() ConcurrentHashMap {
+func NewConcurrentHashMap(factory StorageFactory) ConcurrentHashMap {
 	var segments []Storage
 	for i := 0; i < concurrencyLevel; i++ {
-		segments = append(segments, NewSynchronizedHashMap())
+		segment := factory()
+		segments = append(segments, segment)
 	}
 
 	return ConcurrentHashMap{segments: segments}
