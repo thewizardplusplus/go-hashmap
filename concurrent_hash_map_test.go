@@ -217,7 +217,7 @@ func TestConcurrentHashMap(test *testing.T) {
 			}
 
 			for index, segment := range hashMap.segments {
-				innerMap := segment.(*SynchronizedHashMap).innerMap
+				innerMap := segment.(*SynchronizedHashMap).innerMap.(*HashMap)
 				for _, bucket := range innerMap.buckets {
 					if bucket != nil {
 						mock.AssertExpectationsForObjects(test, bucket.key)

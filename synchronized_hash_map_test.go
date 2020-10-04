@@ -120,7 +120,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 			key := data.makeKey()
 			gotValue, gotOk := hashMap.Get(key)
 
-			for _, bucket := range hashMap.innerMap.buckets {
+			for _, bucket := range hashMap.innerMap.(*HashMap).buckets {
 				if bucket != nil {
 					mock.AssertExpectationsForObjects(test, bucket.key)
 				}
@@ -233,7 +233,7 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 		return true
 	})
 
-	for _, bucket := range hashMap.innerMap.buckets {
+	for _, bucket := range hashMap.innerMap.(*HashMap).buckets {
 		if bucket != nil {
 			mock.AssertExpectationsForObjects(test, bucket.key)
 		}
