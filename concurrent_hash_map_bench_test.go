@@ -17,7 +17,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			name: "Get",
 			prepare: func() ConcurrentHashMap {
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
@@ -33,7 +33,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			name: "Iterate",
 			prepare: func() ConcurrentHashMap {
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
@@ -49,7 +49,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			name: "Set",
 			prepare: func() ConcurrentHashMap {
 				return NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 			},
 			benchmark: func(hashMap ConcurrentHashMap) {
@@ -62,7 +62,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			name: "Delete",
 			prepare: func() ConcurrentHashMap {
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)

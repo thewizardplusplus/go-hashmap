@@ -235,7 +235,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 		{
 			name: "Get",
 			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap(NewHashMap())
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
@@ -249,7 +249,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 		{
 			name: "Iterate",
 			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap(NewHashMap())
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
@@ -261,8 +261,10 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name:    "Set",
-			prepare: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
+			name: "Set",
+			prepare: func() *SynchronizedHashMap {
+				return NewSynchronizedHashMap(NewHashMap())
+			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
@@ -272,7 +274,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 		{
 			name: "Delete",
 			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap(NewHashMap())
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}

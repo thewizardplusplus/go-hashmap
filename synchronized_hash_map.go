@@ -11,8 +11,8 @@ type SynchronizedHashMap struct {
 }
 
 // NewSynchronizedHashMap ...
-func NewSynchronizedHashMap() *SynchronizedHashMap {
-	return &SynchronizedHashMap{innerMap: NewHashMap()}
+func NewSynchronizedHashMap(innerMap Storage) *SynchronizedHashMap {
+	return &SynchronizedHashMap{innerMap: innerMap}
 }
 
 // Get ...

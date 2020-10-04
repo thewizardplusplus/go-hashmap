@@ -10,7 +10,7 @@ import (
 
 func TestNewConcurrentHashMap(test *testing.T) {
 	hashMap := NewConcurrentHashMap(16, func() Storage {
-		return NewSynchronizedHashMap()
+		return NewSynchronizedHashMap(NewHashMap())
 	})
 	assert.Len(test, hashMap.segments, 16)
 	for _, segment := range hashMap.segments {
@@ -35,7 +35,7 @@ func TestConcurrentHashMap(test *testing.T) {
 			name: "getting by a nonexistent key",
 			makeHashMap: func() ConcurrentHashMap {
 				return NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 			},
 			makeKeys: func() []Key {
@@ -56,7 +56,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				key.On("Equals", mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Set(key, "five")
 
@@ -79,7 +79,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				key.On("Equals", mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Set(key, "five #1")
 				hashMap.Set(key, "five #2")
@@ -107,7 +107,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				sixKey.On("Equals", mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Set(fiveKey, "five")
 				hashMap.Set(sixKey, "six")
@@ -133,7 +133,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				key.On("Hash").Return(5)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Delete(key)
 
@@ -156,7 +156,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				key.On("Equals", mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Set(key, "five")
 				hashMap.Delete(key)
@@ -184,7 +184,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				sixKey.On("Equals", mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap(16, func() Storage {
-					return NewSynchronizedHashMap()
+					return NewSynchronizedHashMap(NewHashMap())
 				})
 				hashMap.Set(fiveKey, "five")
 				hashMap.Set(sixKey, "six")
