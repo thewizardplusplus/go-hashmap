@@ -8,6 +8,9 @@ type Key interface {
 	Equals(key interface{}) bool
 }
 
+// Handler ...
+type Handler func(key Key, value interface{}) bool
+
 // Storage ...
 type Storage interface {
 	Get(key Key) (value interface{}, ok bool)

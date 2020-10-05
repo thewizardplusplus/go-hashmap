@@ -4,9 +4,6 @@ import (
 	"math/rand"
 )
 
-// Handler ...
-type Handler func(key Key, value interface{}) bool
-
 type bucket struct {
 	key   Key
 	value interface{}
