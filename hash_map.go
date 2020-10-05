@@ -4,14 +4,6 @@ import (
 	"math/rand"
 )
 
-//go:generate mockery -name=Key -inpkg -case=underscore -testonly
-
-// Key ...
-type Key interface {
-	Hash() int
-	Equals(key interface{}) bool
-}
-
 // Handler ...
 type Handler func(key Key, value interface{}) bool
 
