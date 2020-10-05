@@ -29,3 +29,13 @@ func WithMaxLoadFactor(maxLoadFactor float64) Option {
 		options.maxLoadFactor = maxLoadFactor
 	}
 }
+
+// WithGrowFactor ...
+//
+// Default: 2.
+//
+func WithGrowFactor(growFactor int) Option {
+	return func(options *Config) {
+		options.growFactor = growFactor
+	}
+}
