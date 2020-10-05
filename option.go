@@ -6,3 +6,6 @@ type Config struct {
 	maxLoadFactor   float64
 	growFactor      int
 }
+
+// Option ...
+type Option func(options *Config)
