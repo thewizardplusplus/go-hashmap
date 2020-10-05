@@ -19,3 +19,13 @@ func WithInitialCapacity(initialCapacity int) Option {
 		options.initialCapacity = initialCapacity
 	}
 }
+
+// WithMaxLoadFactor ...
+//
+// Default: 0.75.
+//
+func WithMaxLoadFactor(maxLoadFactor float64) Option {
+	return func(options *Config) {
+		options.maxLoadFactor = maxLoadFactor
+	}
+}
