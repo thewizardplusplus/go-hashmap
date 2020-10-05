@@ -10,11 +10,11 @@ type MockKey struct {
 }
 
 // Equals provides a mock function with given fields: key
-func (_m *MockKey) Equals(key interface{}) bool {
+func (_m *MockKey) Equals(key Key) bool {
 	ret := _m.Called(key)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(interface{}) bool); ok {
+	if rf, ok := ret.Get(0).(func(Key) bool); ok {
 		r0 = rf(key)
 	} else {
 		r0 = ret.Get(0).(bool)
