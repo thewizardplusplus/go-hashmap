@@ -9,3 +9,13 @@ type Config struct {
 
 // Option ...
 type Option func(options *Config)
+
+// WithInitialCapacity ...
+//
+// Default: 16.
+//
+func WithInitialCapacity(initialCapacity int) Option {
+	return func(options *Config) {
+		options.initialCapacity = initialCapacity
+	}
+}
