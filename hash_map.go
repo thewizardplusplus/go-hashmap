@@ -18,7 +18,7 @@ type HashMap struct {
 
 // NewHashMap ...
 func NewHashMap() *HashMap {
-	return newHashMapWithCapacity(defaultConfig.initialCapacity)
+	return newHashMapWithCapacity(defaultConfig, defaultConfig.initialCapacity)
 }
 
 // Get ...
@@ -89,8 +89,8 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 }
 
 func (hashMap *HashMap) rehash() {
-	newHashMap :=
-		newHashMapWithCapacity(len(hashMap.buckets) * hashMap.config.growFactor)
+	newCapacity := len(hashMap.buckets) * hashMap.config.growFactor
+	newHashMap := newHashMapWithCapacity(hashMap.config, newCapacity)
 	hashMap.Iterate(func(key Key, value interface{}) bool {
 		newHashMap.Set(key, value)
 		return true
@@ -99,7 +99,7 @@ func (hashMap *HashMap) rehash() {
 	*hashMap = *newHashMap
 }
 
-func newHashMapWithCapacity(capacity int) *HashMap {
+func newHashMapWithCapacity(config Config, capacity int) *HashMap {
 	buckets := make([]*bucket, capacity)
-	return &HashMap{config: defaultConfig, buckets: buckets, size: 0}
+	return &HashMap{config: config, buckets: buckets, size: 0}
 }
