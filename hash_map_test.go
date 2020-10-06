@@ -6,14 +6,26 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewHashMap(test *testing.T) {
-	hashMap := NewHashMap()
-	require.NotNil(test, hashMap)
-	assert.Len(test, hashMap.buckets, defaultConfig.initialCapacity)
-	assert.Zero(test, hashMap.size)
+	type args struct {
+		options []Option
+	}
+
+	for _, data := range []struct {
+		name string
+		args args
+		want *HashMap
+	}{
+		// TODO: Add test cases.
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			got := NewHashMap(data.args.options...)
+
+			assert.Equal(test, data.want, got)
+		})
+	}
 }
 
 func TestHashMap_Get(test *testing.T) {
