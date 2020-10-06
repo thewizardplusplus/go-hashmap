@@ -11,6 +11,7 @@ type bucket struct {
 
 // HashMap ...
 type HashMap struct {
+	config  Config
 	buckets []*bucket
 	size    int
 }
@@ -58,7 +59,7 @@ func (hashMap *HashMap) Set(key Key, value interface{}) {
 	hashMap.size++
 
 	loadFactor := float64(hashMap.size) / float64(len(hashMap.buckets))
-	if loadFactor > defaultConfig.maxLoadFactor {
+	if loadFactor > hashMap.config.maxLoadFactor {
 		hashMap.rehash()
 	}
 }
@@ -89,7 +90,7 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 
 func (hashMap *HashMap) rehash() {
 	newHashMap :=
-		newHashMapWithCapacity(len(hashMap.buckets) * defaultConfig.growFactor)
+		newHashMapWithCapacity(len(hashMap.buckets) * hashMap.config.growFactor)
 	hashMap.Iterate(func(key Key, value interface{}) bool {
 		newHashMap.Set(key, value)
 		return true
@@ -100,5 +101,5 @@ func (hashMap *HashMap) rehash() {
 
 func newHashMapWithCapacity(capacity int) *HashMap {
 	buckets := make([]*bucket, capacity)
-	return &HashMap{buckets: buckets, size: 0}
+	return &HashMap{config: defaultConfig, buckets: buckets, size: 0}
 }

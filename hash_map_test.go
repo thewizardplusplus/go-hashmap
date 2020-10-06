@@ -283,6 +283,7 @@ func TestHashMap_Iterate_order(test *testing.T) {
 
 func TestHashMap_Set(test *testing.T) {
 	type fields struct {
+		config      Config
 		makeBuckets func() []*bucket
 		size        int
 	}
@@ -300,6 +301,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "without buckets",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					return make([]*bucket, defaultConfig.initialCapacity)
 				},
@@ -321,6 +323,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and a match at the start",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(true)
@@ -348,6 +351,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and a match at the end",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(false)
@@ -381,6 +385,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and no match",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(false)
@@ -416,6 +421,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with a load factor over the maximum and a match",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					threeKey := new(MockKey)
 					threeKey.On("Equals", mock.Anything).Return(true)
@@ -444,6 +450,7 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with a load factor over the maximum and no match",
 			fields: fields{
+				config: defaultConfig,
 				makeBuckets: func() []*bucket {
 					zeroKey := new(MockKey)
 					zeroKey.On("Hash").Return(0)
@@ -487,7 +494,11 @@ func TestHashMap_Set(test *testing.T) {
 			key := data.args.makeKey()
 			value := rand.Int()
 
-			hashMap := HashMap{buckets: buckets, size: data.fields.size}
+			hashMap := HashMap{
+				config:  data.fields.config,
+				buckets: buckets,
+				size:    data.fields.size,
+			}
 			hashMap.Set(key, value)
 
 			gotValue, gotOk := hashMap.Get(key)
