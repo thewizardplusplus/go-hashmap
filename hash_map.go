@@ -94,7 +94,7 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 }
 
 func (hashMap *HashMap) rehash() {
-	newCapacity := len(hashMap.buckets) * hashMap.config.growFactor
+	newCapacity := int(float64(len(hashMap.buckets)) * hashMap.config.growFactor)
 	newHashMap := newHashMapWithCapacity(hashMap.config, newCapacity)
 	hashMap.Iterate(func(key Key, value interface{}) bool {
 		newHashMap.Set(key, value)

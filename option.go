@@ -4,7 +4,7 @@ package hashmap
 type Config struct {
 	initialCapacity int
 	maxLoadFactor   float64
-	growFactor      int
+	growFactor      float64
 }
 
 // nolint: gochecknoglobals
@@ -43,7 +43,7 @@ func WithMaxLoadFactor(maxLoadFactor float64) Option {
 //
 // Default: 2.
 //
-func WithGrowFactor(growFactor int) Option {
+func WithGrowFactor(growFactor float64) Option {
 	return func(options *Config) {
 		options.growFactor = growFactor
 	}
