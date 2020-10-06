@@ -18,7 +18,84 @@ func TestNewHashMap(test *testing.T) {
 		args args
 		want *HashMap
 	}{
-		// TODO: Add test cases.
+		{
+			name: "with the default config",
+			args: args{
+				options: nil,
+			},
+			want: &HashMap{
+				config:  defaultConfig,
+				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				size:    0,
+			},
+		},
+		{
+			name: "with the set initial capacity",
+			args: args{
+				options: []Option{WithInitialCapacity(23)},
+			},
+			want: &HashMap{
+				config: func() Config {
+					config := defaultConfig
+					config.initialCapacity = 23
+
+					return config
+				}(),
+				buckets: make([]*bucket, 23),
+				size:    0,
+			},
+		},
+		{
+			name: "with the set maximal load factor",
+			args: args{
+				options: []Option{WithMaxLoadFactor(23)},
+			},
+			want: &HashMap{
+				config: func() Config {
+					config := defaultConfig
+					config.maxLoadFactor = 23
+
+					return config
+				}(),
+				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				size:    0,
+			},
+		},
+		{
+			name: "with the set grow factor",
+			args: args{
+				options: []Option{WithGrowFactor(23)},
+			},
+			want: &HashMap{
+				config: func() Config {
+					config := defaultConfig
+					config.growFactor = 23
+
+					return config
+				}(),
+				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				size:    0,
+			},
+		},
+		{
+			name: "with the set config",
+			args: args{
+				options: []Option{
+					WithInitialCapacity(12),
+					WithMaxLoadFactor(23),
+					WithGrowFactor(42),
+				},
+			},
+			want: &HashMap{
+				config: Config{
+					initialCapacity: 12,
+					maxLoadFactor:   23,
+					growFactor:      42,
+				},
+				buckets: make([]*bucket, 12),
+				size:    0,
+			},
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewHashMap(data.args.options...)
