@@ -17,8 +17,13 @@ type HashMap struct {
 }
 
 // NewHashMap ...
-func NewHashMap() *HashMap {
-	return newHashMapWithCapacity(defaultConfig, defaultConfig.initialCapacity)
+func NewHashMap(options ...Option) *HashMap {
+	config := defaultConfig
+	for _, option := range options {
+		option(&config)
+	}
+
+	return newHashMapWithCapacity(config, config.initialCapacity)
 }
 
 // Get ...
