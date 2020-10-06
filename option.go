@@ -7,6 +7,15 @@ type Config struct {
 	growFactor      int
 }
 
+// nolint: gochecknoglobals
+var (
+	defaultConfig = Config{
+		initialCapacity: 16,
+		maxLoadFactor:   0.75,
+		growFactor:      2,
+	}
+)
+
 // Option ...
 type Option func(options *Config)
 

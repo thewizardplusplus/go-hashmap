@@ -147,8 +147,10 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 		wantOk           assert.BoolAssertionFunc
 	}{
 		{
-			name:             "without buckets",
-			fields:           fields{buckets: make([]*bucket, initialCapacity)},
+			name: "without buckets",
+			fields: fields{
+				buckets: make([]*bucket, defaultConfig.initialCapacity),
+			},
 			interruptOnCount: 10,
 			wantBuckets:      nil,
 			wantOk:           assert.True,

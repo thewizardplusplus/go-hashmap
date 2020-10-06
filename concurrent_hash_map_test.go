@@ -253,8 +253,8 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			name: "without buckets",
 			fields: fields{
 				buckets: [][]*bucket{
-					make([]*bucket, initialCapacity),
-					make([]*bucket, initialCapacity),
+					make([]*bucket, defaultConfig.initialCapacity),
+					make([]*bucket, defaultConfig.initialCapacity),
 				},
 			},
 			interruptOnCount: 10,

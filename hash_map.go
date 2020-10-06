@@ -15,15 +15,9 @@ type HashMap struct {
 	size    int
 }
 
-const (
-	initialCapacity = 16
-	maxLoadFactor   = 0.75
-	growFactor      = 2
-)
-
 // NewHashMap ...
 func NewHashMap() *HashMap {
-	return newHashMapWithCapacity(initialCapacity)
+	return newHashMapWithCapacity(defaultConfig.initialCapacity)
 }
 
 // Get ...
@@ -64,7 +58,7 @@ func (hashMap *HashMap) Set(key Key, value interface{}) {
 	hashMap.size++
 
 	loadFactor := float64(hashMap.size) / float64(len(hashMap.buckets))
-	if loadFactor > maxLoadFactor {
+	if loadFactor > defaultConfig.maxLoadFactor {
 		hashMap.rehash()
 	}
 }
@@ -94,7 +88,8 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 }
 
 func (hashMap *HashMap) rehash() {
-	newHashMap := newHashMapWithCapacity(len(hashMap.buckets) * growFactor)
+	newHashMap :=
+		newHashMapWithCapacity(len(hashMap.buckets) * defaultConfig.growFactor)
 	hashMap.Iterate(func(key Key, value interface{}) bool {
 		newHashMap.Set(key, value)
 		return true
