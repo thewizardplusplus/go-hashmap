@@ -4,3 +4,6 @@ package hashmap
 type SynchronizedConfig struct {
 	innerMap Storage
 }
+
+// SynchronizedOption ...
+type SynchronizedOption func(options *SynchronizedConfig)
