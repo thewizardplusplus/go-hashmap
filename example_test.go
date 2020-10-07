@@ -21,7 +21,7 @@ func (key StringKey) Equals(other Key) bool {
 
 func Example() {
 	timeZones := NewConcurrentHashMap(16, func() Storage {
-		return NewSynchronizedHashMap(NewHashMap())
+		return NewSynchronizedHashMap()
 	})
 	timeZones.Set(StringKey("EST"), -5*60*60)
 	timeZones.Set(StringKey("CST"), -6*60*60)

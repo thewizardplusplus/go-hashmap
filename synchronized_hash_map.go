@@ -11,8 +11,15 @@ type SynchronizedHashMap struct {
 }
 
 // NewSynchronizedHashMap ...
-func NewSynchronizedHashMap(innerMap Storage) *SynchronizedHashMap {
-	return &SynchronizedHashMap{innerMap: innerMap}
+func NewSynchronizedHashMap(
+	options ...SynchronizedOption,
+) *SynchronizedHashMap {
+	config := SynchronizedConfig{innerMap: NewHashMap()}
+	for _, option := range options {
+		option(&config)
+	}
+
+	return &SynchronizedHashMap{innerMap: config.innerMap}
 }
 
 // Get ...

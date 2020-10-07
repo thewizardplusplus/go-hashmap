@@ -17,10 +17,8 @@ func TestSynchronizedHashMap(test *testing.T) {
 		wantOk      assert.BoolAssertionFunc
 	}{
 		{
-			name: "getting by a nonexistent key",
-			makeHashMap: func() *SynchronizedHashMap {
-				return NewSynchronizedHashMap(NewHashMap())
-			},
+			name:        "getting by a nonexistent key",
+			makeHashMap: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
 			makeKey: func() Key {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
@@ -38,7 +36,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				// it's called inside the HashMap.Get() method below
 				key.On("Equals", mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap(NewHashMap())
+				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five")
 
 				return hashMap
@@ -59,7 +57,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				key.On("Hash").Return(5)
 				key.On("Equals", mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap(NewHashMap())
+				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five #1")
 				hashMap.Set(key, "five #2")
 
@@ -80,7 +78,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				key := new(MockKey)
 				key.On("Hash").Return(5)
 
-				hashMap := NewSynchronizedHashMap(NewHashMap())
+				hashMap := NewSynchronizedHashMap()
 				hashMap.Delete(key)
 
 				return hashMap
@@ -101,7 +99,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 				key.On("Hash").Return(5)
 				key.On("Equals", mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap(NewHashMap())
+				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five")
 				hashMap.Delete(key)
 
