@@ -13,13 +13,18 @@ type ConcurrentHashMap struct {
 }
 
 // NewConcurrentHashMap ...
-func NewConcurrentHashMap(
-	concurrencyLevel int,
-	factory StorageFactory,
-) ConcurrentHashMap {
+func NewConcurrentHashMap(options ...ConcurrentOption) ConcurrentHashMap {
+	config := ConcurrentConfig{
+		concurrencyLevel: 16,
+		segmentFactory:   func() Storage { return NewSynchronizedHashMap() },
+	}
+	for _, option := range options {
+		option(&config)
+	}
+
 	var segments []Storage
-	for i := 0; i < concurrencyLevel; i++ {
-		segment := factory()
+	for i := 0; i < config.concurrencyLevel; i++ {
+		segment := config.segmentFactory()
 		segments = append(segments, segment)
 	}
 
