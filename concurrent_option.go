@@ -1,5 +1,8 @@
 package hashmap
 
+// StorageFactory ...
+type StorageFactory func() Storage
+
 // ConcurrentConfig ...
 type ConcurrentConfig struct {
 	concurrencyLevel int
