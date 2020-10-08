@@ -18,3 +18,14 @@ func WithConcurrencyLevel(concurrencyLevel int) ConcurrentOption {
 		options.concurrencyLevel = concurrencyLevel
 	}
 }
+
+// WithSegmentFactory ...
+//
+// Default: a factory that produces an instance
+// of the SynchronizedHashMap structure with default options.
+//
+func WithSegmentFactory(segmentFactory StorageFactory) ConcurrentOption {
+	return func(options *ConcurrentConfig) {
+		options.segmentFactory = segmentFactory
+	}
+}
