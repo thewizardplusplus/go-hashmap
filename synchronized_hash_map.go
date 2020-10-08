@@ -14,6 +14,8 @@ type SynchronizedHashMap struct {
 func NewSynchronizedHashMap(
 	options ...SynchronizedOption,
 ) *SynchronizedHashMap {
+	// you can't move the default synchronized config into a global variable
+	// because the default inner map should be new every time
 	config := SynchronizedConfig{innerMap: NewHashMap()}
 	for _, option := range options {
 		option(&config)
