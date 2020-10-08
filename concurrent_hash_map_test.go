@@ -10,7 +10,7 @@ import (
 
 func TestNewConcurrentHashMap(test *testing.T) {
 	hashMap := NewConcurrentHashMap()
-	assert.Len(test, hashMap.segments, 16)
+	assert.Len(test, hashMap.segments, defaultConcurrentConfig.concurrencyLevel)
 	for _, segment := range hashMap.segments {
 		assert.NotNil(test, segment)
 	}

@@ -9,6 +9,14 @@ type ConcurrentConfig struct {
 	segmentFactory   StorageFactory
 }
 
+// nolint: gochecknoglobals
+var (
+	defaultConcurrentConfig = ConcurrentConfig{
+		concurrencyLevel: 16,
+		segmentFactory:   func() Storage { return NewSynchronizedHashMap() },
+	}
+)
+
 // ConcurrentOption ...
 type ConcurrentOption func(options *ConcurrentConfig)
 

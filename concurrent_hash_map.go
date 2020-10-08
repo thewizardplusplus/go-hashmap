@@ -11,10 +11,7 @@ type ConcurrentHashMap struct {
 
 // NewConcurrentHashMap ...
 func NewConcurrentHashMap(options ...ConcurrentOption) ConcurrentHashMap {
-	config := ConcurrentConfig{
-		concurrencyLevel: 16,
-		segmentFactory:   func() Storage { return NewSynchronizedHashMap() },
-	}
+	config := defaultConcurrentConfig
 	for _, option := range options {
 		option(&config)
 	}
