@@ -11,6 +11,8 @@ type Key interface {
 // Handler ...
 type Handler func(key Key, value interface{}) bool
 
+//go:generate mockery -name=Storage -inpkg -case=underscore -testonly
+
 // Storage ...
 type Storage interface {
 	Get(key Key) (value interface{}, ok bool)
