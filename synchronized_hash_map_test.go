@@ -8,6 +8,32 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewSynchronizedHashMap(test *testing.T) {
+	type args struct {
+		options []SynchronizedOption
+	}
+
+	for _, data := range []struct {
+		name string
+		args args
+		want *SynchronizedHashMap
+	}{
+		// TODO: Add test cases.
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			got := NewSynchronizedHashMap(data.args.options...)
+
+			_, ok := got.innerMap.(interface {
+				AssertExpectations(assert.TestingT) bool // nolint: staticcheck
+			})
+			if ok {
+				mock.AssertExpectationsForObjects(test, got.innerMap)
+			}
+			assert.Equal(test, data.want, got)
+		})
+	}
+}
+
 func TestSynchronizedHashMap(test *testing.T) {
 	for _, data := range []struct {
 		name        string
