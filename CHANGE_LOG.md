@@ -1,0 +1,15 @@
+# Change Log
+
+## [v1.4](https://github.com/thewizardplusplus/go-hashmap/tree/v1.4) (2020-10-12)
+
+## [v1.3](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3) (2019-06-28)
+
+## [v1.3-alpha.2](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3-alpha.2) (2019-06-26)
+
+## [v1.3-alpha.1](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3-alpha.1) (2019-05-11)
+
+## [v1.2](https://github.com/thewizardplusplus/go-hashmap/tree/v1.2) (2019-05-04)
+
+## [v1.1](https://github.com/thewizardplusplus/go-hashmap/tree/v1.1) (2019-05-02)
+
+## [v1.0](https://github.com/thewizardplusplus/go-hashmap/tree/v1.0) (2019-05-01)
