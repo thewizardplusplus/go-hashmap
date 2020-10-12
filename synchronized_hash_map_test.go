@@ -18,7 +18,28 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 		args args
 		want *SynchronizedHashMap
 	}{
-		// TODO: Add test cases.
+		{
+			name: "with the default config",
+			args: args{
+				options: nil,
+			},
+			want: &SynchronizedHashMap{
+				innerMap: &HashMap{
+					config:  defaultConfig,
+					buckets: make([]*bucket, defaultConfig.initialCapacity),
+					size:    0,
+				},
+			},
+		},
+		{
+			name: "with the set inner map",
+			args: args{
+				options: []SynchronizedOption{WithInnerMap(new(MockStorage))},
+			},
+			want: &SynchronizedHashMap{
+				innerMap: new(MockStorage),
+			},
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewSynchronizedHashMap(data.args.options...)
