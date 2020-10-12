@@ -232,7 +232,9 @@ func TestHashMap_Get(test *testing.T) {
 		test.Run(data.name, func(test *testing.T) {
 			buckets := data.fields.makeBuckets()
 			key := data.args.makeKey()
-			gotValue, gotOk := HashMap{buckets: buckets}.Get(key)
+
+			hashMap := HashMap{buckets: buckets}
+			gotValue, gotOk := hashMap.Get(key)
 
 			for _, bucket := range buckets {
 				if bucket != nil {

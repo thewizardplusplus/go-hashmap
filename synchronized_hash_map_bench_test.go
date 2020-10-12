@@ -8,8 +8,8 @@ import (
 )
 
 type SynchronizedBuiltinMap struct {
-	innerMap map[int]int
 	lock     sync.RWMutex
+	innerMap map[int]int
 }
 
 func NewSynchronizedBuiltinMap() *SynchronizedBuiltinMap {

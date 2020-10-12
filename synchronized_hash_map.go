@@ -6,8 +6,8 @@ import (
 
 // SynchronizedHashMap ...
 type SynchronizedHashMap struct {
-	innerMap Storage
 	lock     sync.RWMutex
+	innerMap Storage
 }
 
 // NewSynchronizedHashMap ...

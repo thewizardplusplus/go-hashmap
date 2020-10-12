@@ -27,6 +27,7 @@ func Example() {
 
 	estOffset, ok := timeZones.Get(StringKey("EST"))
 	fmt.Println(estOffset, ok)
+
 	// Output:
 	// -18000 true
 }
