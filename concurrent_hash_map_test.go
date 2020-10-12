@@ -18,7 +18,87 @@ func TestNewConcurrentHashMap(test *testing.T) {
 		args args
 		want ConcurrentHashMap
 	}{
-		// TODO: Add test cases.
+		{
+			name: "with the default config",
+			args: args{
+				options: nil,
+			},
+			want: ConcurrentHashMap{
+				segments: func() []Storage {
+					var segments []Storage
+					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+						segments = append(segments, &SynchronizedHashMap{
+							innerMap: &HashMap{
+								config:  defaultConfig,
+								buckets: make([]*bucket, defaultConfig.initialCapacity),
+								size:    0,
+							},
+						})
+					}
+
+					return segments
+				}(),
+			},
+		},
+		{
+			name: "with the set concurrency level",
+			args: args{
+				options: []ConcurrentOption{WithConcurrencyLevel(23)},
+			},
+			want: ConcurrentHashMap{
+				segments: func() []Storage {
+					var segments []Storage
+					for i := 0; i < 23; i++ {
+						segments = append(segments, &SynchronizedHashMap{
+							innerMap: &HashMap{
+								config:  defaultConfig,
+								buckets: make([]*bucket, defaultConfig.initialCapacity),
+								size:    0,
+							},
+						})
+					}
+
+					return segments
+				}(),
+			},
+		},
+		{
+			name: "with the set segment factory",
+			args: args{
+				options: []ConcurrentOption{
+					WithSegmentFactory(func() Storage { return new(MockStorage) }),
+				},
+			},
+			want: ConcurrentHashMap{
+				segments: func() []Storage {
+					var segments []Storage
+					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+						segments = append(segments, new(MockStorage))
+					}
+
+					return segments
+				}(),
+			},
+		},
+		{
+			name: "with the set config",
+			args: args{
+				options: []ConcurrentOption{
+					WithConcurrencyLevel(23),
+					WithSegmentFactory(func() Storage { return new(MockStorage) }),
+				},
+			},
+			want: ConcurrentHashMap{
+				segments: func() []Storage {
+					var segments []Storage
+					for i := 0; i < 23; i++ {
+						segments = append(segments, new(MockStorage))
+					}
+
+					return segments
+				}(),
+			},
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewConcurrentHashMap(data.args.options...)
