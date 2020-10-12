@@ -195,4 +195,4 @@ BenchmarkHashMap/Delete/1000000-4       	 30000000	       353 ns/op	      24 B/o
 
 The MIT License (MIT)
 
-Copyright &copy; 2019 thewizardplusplus
+Copyright &copy; 2019-2020 thewizardplusplus
