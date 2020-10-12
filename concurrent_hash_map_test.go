@@ -9,10 +9,30 @@ import (
 )
 
 func TestNewConcurrentHashMap(test *testing.T) {
-	hashMap := NewConcurrentHashMap()
-	assert.Len(test, hashMap.segments, defaultConcurrentConfig.concurrencyLevel)
-	for _, segment := range hashMap.segments {
-		assert.NotNil(test, segment)
+	type args struct {
+		options []ConcurrentOption
+	}
+
+	for _, data := range []struct {
+		name string
+		args args
+		want ConcurrentHashMap
+	}{
+		// TODO: Add test cases.
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			got := NewConcurrentHashMap(data.args.options...)
+
+			for _, segment := range got.segments {
+				_, ok := segment.(interface {
+					AssertExpectations(assert.TestingT) bool // nolint: staticcheck
+				})
+				if ok {
+					mock.AssertExpectationsForObjects(test, segment)
+				}
+			}
+			assert.Equal(test, data.want, got)
+		})
 	}
 }
 
