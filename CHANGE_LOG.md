@@ -13,3 +13,14 @@
 ## [v1.1](https://github.com/thewizardplusplus/go-hashmap/tree/v1.1) (2019-05-02)
 
 ## [v1.0](https://github.com/thewizardplusplus/go-hashmap/tree/v1.0) (2019-05-01)
+
+### Features
+
+- implementation of a hash map:
+  - use the open addressing strategy for collision resolution;
+  - support operations:
+    - getting of an item by a key;
+    - setting of an item by a key;
+    - deleting of an item by a key:
+      - support a success flag;
+  - use the key interface for supporting custom types.
