@@ -4,6 +4,50 @@
 
 ## [v1.3](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3) (2019-06-28)
 
+- support randomizing of iteration order:
+  - for a hash map:
+    - over items and their keys;
+  - for a synchronized hash map:
+    - over items and their keys;
+  - for a concurrent hash map:
+    - over items and their keys;
+    - over shards.
+
+### Features
+
+- implementation of a hash map:
+  - use the open addressing strategy for collision resolution;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - use the key interface for supporting custom types;
+- implementation of a synchronized hash map:
+  - use the implementation described above as an inner map;
+  - use a mutex lock to access the inner map;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+- implementation of a concurrent hash map:
+  - use data sharding for concurrent access;
+  - use the synchronized implementation described above as one shard;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order:
+        - over items and their keys;
+        - over shards;
+    - setting of an item by a key;
+    - deleting of an item by a key.
+
 ## [v1.3-alpha.2](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3-alpha.2) (2019-06-26)
 
 - support stopping of iteration over items and their keys:
