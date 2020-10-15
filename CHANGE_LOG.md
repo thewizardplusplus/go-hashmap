@@ -2,6 +2,69 @@
 
 ## [v1.4](https://github.com/thewizardplusplus/go-hashmap/tree/v1.4) (2020-10-12)
 
+- add the interface of an universal storage:
+  - implementation of a synchronized hash map:
+    - use the interface of an universal storage as an inner map;
+  - implementation of a concurrent hash map:
+    - use the interface of an universal storage as one shard;
+- support options:
+  - for a hash map:
+    - initial capacity;
+    - maximal load factor;
+    - grow factor;
+  - for a synchronized hash map:
+    - inner map;
+  - for a concurrent hash map:
+    - concurrency level;
+    - shard factory;
+- misc.:
+  - pass the `hashmap.Key` interface as a parameter to the `hashmap.Key.Equals()` method;
+  - improve the Travis CI configuration.
+
+### Features
+
+- implementation of a hash map:
+  - use the open addressing strategy for collision resolution;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - initial capacity;
+    - maximal load factor;
+    - grow factor;
+  - use the key interface for supporting custom types;
+- implementation of a synchronized hash map:
+  - use the interface of an universal storage as an inner map;
+  - use a mutex lock to access the inner map;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - inner map;
+- implementation of a concurrent hash map:
+  - use data sharding for concurrent access;
+  - use the interface of an universal storage as one shard;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order:
+        - over items and their keys;
+        - over shards;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - concurrency level;
+    - shard factory.
+
 ## [v1.3](https://github.com/thewizardplusplus/go-hashmap/tree/v1.3) (2019-06-28)
 
 - support randomizing of iteration order:
