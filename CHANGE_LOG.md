@@ -25,6 +25,7 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
@@ -36,7 +37,6 @@
     - initial capacity;
     - maximal load factor;
     - grow factor;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the interface of an universal storage as an inner map;
   - use a mutex lock to access the inner map;
@@ -80,6 +80,7 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
@@ -87,7 +88,6 @@
       - support randomizing of iteration order;
     - setting of an item by a key;
     - deleting of an item by a key;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the implementation described above as an inner map;
   - use a mutex lock to access the inner map;
@@ -122,13 +122,13 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
       - support stopping of iteration;
     - setting of an item by a key;
     - deleting of an item by a key;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the implementation described above as an inner map;
   - use a mutex lock to access the inner map;
@@ -159,12 +159,12 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys;
     - setting of an item by a key;
     - deleting of an item by a key;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the implementation described above as an inner map;
   - use a mutex lock to access the inner map;
@@ -197,11 +197,11 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - setting of an item by a key;
     - deleting of an item by a key;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the implementation described above as an inner map;
   - use a mutex lock to access the inner map;
@@ -232,12 +232,12 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - setting of an item by a key;
     - deleting of an item by a key:
       - support a success flag;
-  - use the key interface for supporting custom types;
 - implementation of a synchronized hash map:
   - use the implementation described above as an inner map;
   - use a mutex lock to access the inner map;
@@ -253,9 +253,9 @@
 
 - implementation of a hash map:
   - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
   - support operations:
     - getting of an item by a key;
     - setting of an item by a key;
     - deleting of an item by a key:
-      - support a success flag;
-  - use the key interface for supporting custom types.
+      - support a success flag.
