@@ -5,6 +5,52 @@
 [![Build Status](https://travis-ci.org/thewizardplusplus/go-hashmap.svg?branch=master)](https://travis-ci.org/thewizardplusplus/go-hashmap)
 [![codecov](https://codecov.io/gh/thewizardplusplus/go-hashmap/branch/master/graph/badge.svg)](https://codecov.io/gh/thewizardplusplus/go-hashmap)
 
+The library that implements a hash map with synchronized and concurrent wrappers.
+
+## Features
+
+- implementation of a hash map:
+  - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - initial capacity;
+    - maximal load factor;
+    - grow factor;
+- implementation of a synchronized hash map:
+  - use the interface of an universal storage as an inner map;
+  - use a mutex lock to access the inner map;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - inner map;
+- implementation of a concurrent hash map:
+  - use data sharding for concurrent access;
+  - use the interface of an universal storage as one shard;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration;
+      - support randomizing of iteration order:
+        - over items and their keys;
+        - over shards;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - concurrency level;
+    - shard factory.
+
 ## Installation
 
 ```
