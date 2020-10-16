@@ -5,6 +5,10 @@ import (
 )
 
 // SynchronizedHashMap ...
+//
+// It's safe for concurrent access because it uses a mutex lock to access
+// the inner map.
+//
 type SynchronizedHashMap struct {
 	lock     sync.RWMutex
 	innerMap Storage
@@ -33,6 +37,14 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
+//
+// If the handler returns false, iteration is broken.
+//
+// It randomizes of iteration order.
+//
+// A mutex lock is using only for iteration, not for handling (the handler
+// is called out of lock).
+//
 func (hashMap *SynchronizedHashMap) Iterate(handler Handler) bool {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
