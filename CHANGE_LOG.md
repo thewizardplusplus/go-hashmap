@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.4.1](https://github.com/thewizardplusplus/go-hashmap/tree/v1.4.1) (2020-10-16)
+
+- add explanatory comments for implementations:
+  - of a hash map;
+  - of a synchronized hash map;
+  - of a concurrent hash map;
+- describe for releases:
+  - features;
+  - change log.
+
 ## [v1.4](https://github.com/thewizardplusplus/go-hashmap/tree/v1.4) (2020-10-12)
 
 - add the interface of an universal storage:
