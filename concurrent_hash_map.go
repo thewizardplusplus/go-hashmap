@@ -5,6 +5,10 @@ import (
 )
 
 // ConcurrentHashMap ...
+//
+// It's partially safe for concurrent access because it uses data sharding.
+// Each segment should take care of concurrent access safety itself.
+//
 type ConcurrentHashMap struct {
 	segments []Storage
 }
@@ -31,6 +35,11 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Iterate ...
+//
+// If the handler returns false, iteration is broken.
+//
+// It randomizes of iteration order over items and their keys and over segments.
+//
 func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
 	for _, index := range rand.Perm(len(hashMap.segments)) {
 		segment := hashMap.segments[index]
