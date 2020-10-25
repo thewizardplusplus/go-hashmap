@@ -8,9 +8,6 @@ type Key interface {
 	Equals(key Key) bool
 }
 
-// Handler ...
-type Handler func(key Key, value interface{}) bool
-
 //go:generate mockery -name=Storage -inpkg -case=underscore -testonly
 
 // Storage ...
