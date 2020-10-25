@@ -35,7 +35,57 @@ func TestWithInterruption(test *testing.T) {
 		handlerArgs handlerArgs
 		want        assert.BoolAssertionFunc
 	}{
-		// TODO: Add test cases.
+		{
+			name: "not interrupted and positive",
+			wrapperArgs: wrapperArgs{
+				ctx: context.Background(),
+				handler: func() HandlerInterface {
+					handler := new(MockHandlerInterface)
+					handler.On("Handle", NewMockKeyWithID(23), "data").Return(true)
+
+					return handler
+				}(),
+			},
+			handlerArgs: handlerArgs{
+				key:   NewMockKeyWithID(23),
+				value: "data",
+			},
+			want: assert.True,
+		},
+		{
+			name: "not interrupted and negative",
+			wrapperArgs: wrapperArgs{
+				ctx: context.Background(),
+				handler: func() HandlerInterface {
+					handler := new(MockHandlerInterface)
+					handler.On("Handle", NewMockKeyWithID(23), "data").Return(false)
+
+					return handler
+				}(),
+			},
+			handlerArgs: handlerArgs{
+				key:   NewMockKeyWithID(23),
+				value: "data",
+			},
+			want: assert.False,
+		},
+		{
+			name: "interrupted",
+			wrapperArgs: wrapperArgs{
+				ctx: func() context.Context {
+					ctx, cancel := context.WithCancel(context.Background())
+					cancel()
+
+					return ctx
+				}(),
+				handler: new(MockHandlerInterface),
+			},
+			handlerArgs: handlerArgs{
+				key:   NewMockKeyWithID(23),
+				value: "data",
+			},
+			want: assert.False,
+		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			handler := WithInterruption(
