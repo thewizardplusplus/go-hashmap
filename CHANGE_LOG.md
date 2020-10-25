@@ -1,5 +1,62 @@
 # Change Log
 
+## [v1.5](https://github.com/thewizardplusplus/go-hashmap/tree/v1.5) (2020-10-25)
+
+- support stopping of iteration via a context:
+  - for a hash map;
+  - for a synchronized hash map;
+  - for a concurrent hash map.
+
+### Features
+
+- implementation of a hash map:
+  - use the open addressing strategy for collision resolution;
+  - use the key interface for supporting custom types;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - initial capacity;
+    - maximal load factor;
+    - grow factor;
+- implementation of a synchronized hash map:
+  - use the interface of an universal storage as an inner map;
+  - use a mutex lock to access the inner map;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
+      - support randomizing of iteration order;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - inner map;
+- implementation of a concurrent hash map:
+  - use data sharding for concurrent access;
+  - use the interface of an universal storage as one shard;
+  - support operations:
+    - getting of an item by a key;
+    - iteration over items and their keys:
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
+      - support randomizing of iteration order:
+        - over items and their keys;
+        - over shards;
+    - setting of an item by a key;
+    - deleting of an item by a key;
+  - support options:
+    - concurrency level;
+    - shard factory.
+
 ## [v1.4.1](https://github.com/thewizardplusplus/go-hashmap/tree/v1.4.1) (2020-10-16)
 
 - add explanatory comments for implementations:
