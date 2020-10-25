@@ -15,7 +15,9 @@ The library that implements a hash map with synchronized and concurrent wrappers
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
-      - support stopping of iteration;
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
       - support randomizing of iteration order;
     - setting of an item by a key;
     - deleting of an item by a key;
@@ -29,7 +31,9 @@ The library that implements a hash map with synchronized and concurrent wrappers
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
-      - support stopping of iteration;
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
       - support randomizing of iteration order;
     - setting of an item by a key;
     - deleting of an item by a key;
@@ -41,7 +45,9 @@ The library that implements a hash map with synchronized and concurrent wrappers
   - support operations:
     - getting of an item by a key;
     - iteration over items and their keys:
-      - support stopping of iteration;
+      - support stopping of iteration:
+        - via a handling result;
+        - via a context;
       - support randomizing of iteration order:
         - over items and their keys;
         - over shards;
