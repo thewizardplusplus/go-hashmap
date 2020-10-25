@@ -9,6 +9,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type MockKeyWithID struct {
+	MockKey
+
+	ID int
+}
+
+func NewMockKeyWithID(id int) *MockKeyWithID {
+	return &MockKeyWithID{ID: id}
+}
+
 func TestWithInterruption(test *testing.T) {
 	type wrapperArgs struct {
 		ctx     context.Context
