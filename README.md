@@ -2,8 +2,9 @@
 
 [![GoDoc](https://godoc.org/github.com/thewizardplusplus/go-hashmap?status.svg)](https://godoc.org/github.com/thewizardplusplus/go-hashmap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thewizardplusplus/go-hashmap)](https://goreportcard.com/report/github.com/thewizardplusplus/go-hashmap)
-[![Build Status](https://travis-ci.org/thewizardplusplus/go-hashmap.svg?branch=master)](https://travis-ci.org/thewizardplusplus/go-hashmap)
-[![codecov](https://codecov.io/gh/thewizardplusplus/go-hashmap/branch/master/graph/badge.svg)](https://codecov.io/gh/thewizardplusplus/go-hashmap)
+[![lint](https://github.com/thewizardplusplus/go-hashmap/actions/workflows/lint.yaml/badge.svg)](https://github.com/thewizardplusplus/go-hashmap/actions/workflows/lint.yaml)
+[![test](https://github.com/thewizardplusplus/go-hashmap/actions/workflows/test.yaml/badge.svg)](https://github.com/thewizardplusplus/go-hashmap/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/gh/thewizardplusplus/go-hashmap/graph/badge.svg?token=81EVNXEM2F)](https://codecov.io/gh/thewizardplusplus/go-hashmap)
 
 The library that implements a hash map with synchronized and concurrent wrappers.
 
