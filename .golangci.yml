@@ -1,0 +1,21 @@
+version: "2"
+linters:
+  enable:
+    - lll
+  settings:
+    lll:
+      line-length: 80
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - lll
+        source: "^//go:generate "
+formatters:
+  exclusions:
+    generated: lax
