@@ -1,7 +1,7 @@
 package hashmap
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,12 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 			},
 			want: &SynchronizedHashMap{
 				innerMap: &HashMap{
-					config:  defaultConfig,
+					config: func() Config {
+						config := defaultConfig
+						config.permuter = nil
+
+						return config
+					}(),
 					buckets: make([]*bucket, defaultConfig.initialCapacity),
 					size:    0,
 				},
@@ -43,6 +48,9 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewSynchronizedHashMap(data.args.options...)
+			if innerMap, ok := got.innerMap.(*HashMap); ok {
+				innerMap.config.permuter = nil
+			}
 
 			_, ok := got.innerMap.(interface {
 				AssertExpectations(assert.TestingT) bool // nolint: staticcheck
@@ -211,8 +219,8 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
 			wantOk: assert.True,
@@ -228,18 +236,18 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 2,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 			},
 			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			// reset the random generator to make tests deterministic
-			rand.Seed(1)
-
 			var gotBuckets []bucket
-			innerMap := HashMap{buckets: data.fields.buckets}
+			innerMap := HashMap{
+				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+				buckets: data.fields.buckets,
+			}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
 			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
@@ -260,6 +268,7 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 
 func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 	innerMap := HashMap{
+		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 		buckets: []*bucket{
 			5: {key: new(MockKey), value: "five"},
 			6: {key: new(MockKey), value: "six"},
@@ -269,14 +278,12 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 	hashMap := SynchronizedHashMap{innerMap: &innerMap}
 
 	var gotBucketsOne []bucket
-	rand.Seed(1)
 	gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
 		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
 		return true
 	})
 
 	var gotBucketsTwo []bucket
-	rand.Seed(2)
 	gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
 		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
 		return true
@@ -289,16 +296,16 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 	}
 
 	wantBucketsOne := []bucket{
-		{key: new(MockKey), value: "five"},
 		{key: new(MockKey), value: "six"},
+		{key: new(MockKey), value: "five"},
 		{key: new(MockKey), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
 	assert.True(test, gotOkOne)
 
 	wantBucketsTwo := []bucket{
-		{key: new(MockKey), value: "six"},
 		{key: new(MockKey), value: "seven"},
+		{key: new(MockKey), value: "six"},
 		{key: new(MockKey), value: "five"},
 	}
 	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)

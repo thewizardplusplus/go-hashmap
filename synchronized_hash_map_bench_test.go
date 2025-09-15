@@ -2,7 +2,7 @@ package hashmap
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"testing"
 )
@@ -77,7 +77,7 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
-				builtinMap.Get(rand.Intn(sizeForSyncBench))
+				builtinMap.Get(rand.IntN(sizeForSyncBench))
 			},
 		},
 		{
@@ -116,7 +116,7 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
-				builtinMap.Delete(rand.Intn(sizeForSyncBench))
+				builtinMap.Delete(rand.IntN(sizeForSyncBench))
 			},
 		},
 	} {
@@ -161,7 +161,7 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 				return syncMap
 			},
 			benchmark: func(syncMap *sync.Map) {
-				syncMap.Load(rand.Intn(sizeForSyncBench))
+				syncMap.Load(rand.IntN(sizeForSyncBench))
 			},
 		},
 		{
@@ -198,7 +198,7 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 				return syncMap
 			},
 			benchmark: func(syncMap *sync.Map) {
-				syncMap.Delete(rand.Intn(sizeForSyncBench))
+				syncMap.Delete(rand.IntN(sizeForSyncBench))
 			},
 		},
 	} {
@@ -243,7 +243,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
-				hashMap.Get(IntKey(rand.Intn(sizeForSyncBench)))
+				hashMap.Get(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 		{
@@ -280,7 +280,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
-				hashMap.Delete(IntKey(rand.Intn(sizeForSyncBench)))
+				hashMap.Delete(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 	} {
