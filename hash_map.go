@@ -1,9 +1,5 @@
 package hashmap
 
-import (
-	"math/rand"
-)
-
 type bucket struct {
 	key   Key
 	value interface{}
@@ -12,7 +8,6 @@ type bucket struct {
 // HashMap ...
 //
 // It's not safe for concurrent access.
-//
 type HashMap struct {
 	config  Config
 	buckets []*bucket
@@ -44,9 +39,8 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 // If the handler returns false, iteration is broken.
 //
 // It randomizes of iteration order.
-//
 func (hashMap HashMap) Iterate(handler Handler) bool {
-	for _, index := range rand.Perm(len(hashMap.buckets)) {
+	for _, index := range hashMap.config.permuter(len(hashMap.buckets)) {
 		bucket := hashMap.buckets[index]
 		if bucket == nil {
 			continue

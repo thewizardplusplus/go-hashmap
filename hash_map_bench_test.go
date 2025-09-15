@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 )
 
@@ -38,7 +38,7 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(size int, builtinMap map[int]int) {
-				_ = builtinMap[rand.Intn(size)]
+				_ = builtinMap[rand.IntN(size)]
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(size int, builtinMap map[int]int) {
-				delete(builtinMap, rand.Intn(size))
+				delete(builtinMap, rand.IntN(size))
 			},
 		},
 	} {
@@ -111,7 +111,7 @@ func BenchmarkHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(size int, hashMap *HashMap) {
-				hashMap.Get(IntKey(rand.Intn(size)))
+				hashMap.Get(IntKey(rand.IntN(size)))
 			},
 		},
 		{
@@ -148,7 +148,7 @@ func BenchmarkHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(size int, hashMap *HashMap) {
-				hashMap.Delete(IntKey(rand.Intn(size)))
+				hashMap.Delete(IntKey(rand.IntN(size)))
 			},
 		},
 	} {

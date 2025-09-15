@@ -1,7 +1,7 @@
 package hashmap
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,12 @@ func TestNewHashMap(test *testing.T) {
 				options: nil,
 			},
 			want: &HashMap{
-				config:  defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				buckets: make([]*bucket, defaultConfig.initialCapacity),
 				size:    0,
 			},
@@ -38,6 +43,7 @@ func TestNewHashMap(test *testing.T) {
 				config: func() Config {
 					config := defaultConfig
 					config.initialCapacity = 23
+					config.permuter = nil
 
 					return config
 				}(),
@@ -54,6 +60,7 @@ func TestNewHashMap(test *testing.T) {
 				config: func() Config {
 					config := defaultConfig
 					config.maxLoadFactor = 23
+					config.permuter = nil
 
 					return config
 				}(),
@@ -70,6 +77,7 @@ func TestNewHashMap(test *testing.T) {
 				config: func() Config {
 					config := defaultConfig
 					config.growFactor = 23
+					config.permuter = nil
 
 					return config
 				}(),
@@ -84,6 +92,7 @@ func TestNewHashMap(test *testing.T) {
 					WithInitialCapacity(12),
 					WithMaxLoadFactor(23),
 					WithGrowFactor(42),
+					WithPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
 				},
 			},
 			want: &HashMap{
@@ -91,6 +100,7 @@ func TestNewHashMap(test *testing.T) {
 					initialCapacity: 12,
 					maxLoadFactor:   23,
 					growFactor:      42,
+					permuter:        nil,
 				},
 				buckets: make([]*bucket, 12),
 				size:    0,
@@ -99,6 +109,9 @@ func TestNewHashMap(test *testing.T) {
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewHashMap(data.args.options...)
+
+			assert.NotNil(test, got.config.permuter)
+			got.config.permuter = nil
 
 			assert.Equal(test, data.want, got)
 		})
@@ -280,8 +293,8 @@ func TestHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
 			wantOk: assert.True,
@@ -297,18 +310,18 @@ func TestHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 2,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 			},
 			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			// reset the random generator to make tests deterministic
-			rand.Seed(1)
-
 			var gotBuckets []bucket
-			hashMap := HashMap{buckets: data.fields.buckets}
+			hashMap := HashMap{
+				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+				buckets: data.fields.buckets,
+			}
 			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 				// interrupt after a specified count of got buckets
@@ -328,6 +341,7 @@ func TestHashMap_Iterate(test *testing.T) {
 
 func TestHashMap_Iterate_order(test *testing.T) {
 	hashMap := HashMap{
+		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 		buckets: []*bucket{
 			5: {key: new(MockKey), value: "five"},
 			6: {key: new(MockKey), value: "six"},
@@ -336,14 +350,12 @@ func TestHashMap_Iterate_order(test *testing.T) {
 	}
 
 	var gotBucketsOne []bucket
-	rand.Seed(1)
 	gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
 		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
 		return true
 	})
 
 	var gotBucketsTwo []bucket
-	rand.Seed(2)
 	gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
 		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
 		return true
@@ -356,16 +368,16 @@ func TestHashMap_Iterate_order(test *testing.T) {
 	}
 
 	wantBucketsOne := []bucket{
-		{key: new(MockKey), value: "five"},
 		{key: new(MockKey), value: "six"},
+		{key: new(MockKey), value: "five"},
 		{key: new(MockKey), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
 	assert.True(test, gotOkOne)
 
 	wantBucketsTwo := []bucket{
-		{key: new(MockKey), value: "six"},
 		{key: new(MockKey), value: "seven"},
+		{key: new(MockKey), value: "six"},
 		{key: new(MockKey), value: "five"},
 	}
 	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)
@@ -392,7 +404,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "without buckets",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					return make([]*bucket, defaultConfig.initialCapacity)
 				},
@@ -414,7 +431,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and a match at the start",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(true)
@@ -442,7 +464,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and a match at the end",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(false)
@@ -476,7 +503,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with few buckets and no match",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					fiveKey := new(MockKey)
 					fiveKey.On("Equals", mock.Anything).Return(false)
@@ -512,7 +544,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with a load factor over the maximum and a match",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = nil
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					threeKey := new(MockKey)
 					threeKey.On("Equals", mock.Anything).Return(true)
@@ -541,7 +578,12 @@ func TestHashMap_Set(test *testing.T) {
 		{
 			name: "with a load factor over the maximum and no match",
 			fields: fields{
-				config: defaultConfig,
+				config: func() Config {
+					config := defaultConfig
+					config.permuter = rand.New(rand.NewPCG(0, 0)).Perm
+
+					return config
+				}(),
 				makeBuckets: func() []*bucket {
 					zeroKey := new(MockKey)
 					zeroKey.On("Hash").Return(0)
