@@ -1,7 +1,7 @@
 package hashmap
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,12 +24,24 @@ func TestNewConcurrentHashMap(test *testing.T) {
 				options: nil,
 			},
 			want: ConcurrentHashMap{
+				config: func() ConcurrentConfig {
+					config := defaultConcurrentConfig
+					config.segmentFactory = nil
+					config.permuter = nil
+
+					return config
+				}(),
 				segments: func() []Storage {
 					var segments []Storage
 					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
 						segments = append(segments, &SynchronizedHashMap{
 							innerMap: &HashMap{
-								config:  defaultConfig,
+								config: func() Config {
+									config := defaultConfig
+									config.permuter = nil
+
+									return config
+								}(),
 								buckets: make([]*bucket, defaultConfig.initialCapacity),
 								size:    0,
 							},
@@ -46,12 +58,25 @@ func TestNewConcurrentHashMap(test *testing.T) {
 				options: []ConcurrentOption{WithConcurrencyLevel(23)},
 			},
 			want: ConcurrentHashMap{
+				config: func() ConcurrentConfig {
+					config := defaultConcurrentConfig
+					config.concurrencyLevel = 23
+					config.segmentFactory = nil
+					config.permuter = nil
+
+					return config
+				}(),
 				segments: func() []Storage {
 					var segments []Storage
 					for i := 0; i < 23; i++ {
 						segments = append(segments, &SynchronizedHashMap{
 							innerMap: &HashMap{
-								config:  defaultConfig,
+								config: func() Config {
+									config := defaultConfig
+									config.permuter = nil
+
+									return config
+								}(),
 								buckets: make([]*bucket, defaultConfig.initialCapacity),
 								size:    0,
 							},
@@ -70,6 +95,13 @@ func TestNewConcurrentHashMap(test *testing.T) {
 				},
 			},
 			want: ConcurrentHashMap{
+				config: func() ConcurrentConfig {
+					config := defaultConcurrentConfig
+					config.segmentFactory = nil
+					config.permuter = nil
+
+					return config
+				}(),
 				segments: func() []Storage {
 					var segments []Storage
 					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
@@ -86,9 +118,18 @@ func TestNewConcurrentHashMap(test *testing.T) {
 				options: []ConcurrentOption{
 					WithConcurrencyLevel(23),
 					WithSegmentFactory(func() Storage { return new(MockStorage) }),
+					WithConcurrentPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
 				},
 			},
 			want: ConcurrentHashMap{
+				config: func() ConcurrentConfig {
+					config := defaultConcurrentConfig
+					config.concurrencyLevel = 23
+					config.segmentFactory = nil
+					config.permuter = nil
+
+					return config
+				}(),
 				segments: func() []Storage {
 					var segments []Storage
 					for i := 0; i < 23; i++ {
@@ -104,6 +145,12 @@ func TestNewConcurrentHashMap(test *testing.T) {
 			got := NewConcurrentHashMap(data.args.options...)
 
 			for _, segment := range got.segments {
+				if typedSegment, ok := segment.(*SynchronizedHashMap); ok {
+					if innerMap, ok := typedSegment.innerMap.(*HashMap); ok {
+						innerMap.config.permuter = nil
+					}
+				}
+
 				_, ok := segment.(interface {
 					AssertExpectations(assert.TestingT) bool // nolint: staticcheck
 				})
@@ -111,6 +158,13 @@ func TestNewConcurrentHashMap(test *testing.T) {
 					mock.AssertExpectationsForObjects(test, segment)
 				}
 			}
+
+			assert.NotNil(test, got.config.segmentFactory)
+			got.config.segmentFactory = nil
+
+			assert.NotNil(test, got.config.permuter)
+			got.config.permuter = nil
+
 			assert.Equal(test, data.want, got)
 		})
 	}
@@ -356,9 +410,9 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #3"},
 				{key: new(MockKey), value: "five #2"},
 				{key: new(MockKey), value: "five #1"},
+				{key: new(MockKey), value: "five #3"},
 			},
 			wantOk: assert.True,
 		},
@@ -375,8 +429,8 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 2,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #3"},
 				{key: new(MockKey), value: "five #2"},
+				{key: new(MockKey), value: "five #1"},
 			},
 			wantOk: assert.False,
 		},
@@ -391,8 +445,8 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
 			wantOk: assert.True,
@@ -408,25 +462,28 @@ func TestConcurrentHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 2,
 			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 			},
 			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			// reset the random generator to make tests deterministic
-			rand.Seed(1)
-
 			var segments []Storage
 			for _, buckets := range data.fields.buckets {
-				innerMap := &HashMap{buckets: buckets}
+				innerMap := &HashMap{
+					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+					buckets: buckets,
+				}
 				segment := &SynchronizedHashMap{innerMap: innerMap}
 				segments = append(segments, segment)
 			}
 
 			var gotBuckets []bucket
-			hashMap := ConcurrentHashMap{segments: segments}
+			hashMap := ConcurrentHashMap{
+				config:   ConcurrentConfig{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+				segments: segments,
+			}
 			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 				// interrupt after a specified count of got buckets
@@ -473,9 +530,9 @@ func TestConcurrentHashMap_Iterate_order(test *testing.T) {
 			randomSeedOne: 1,
 			randomSeedTwo: 2,
 			wantBucketsOne: []bucket{
-				{key: new(MockKey), value: "five #3"},
 				{key: new(MockKey), value: "five #2"},
 				{key: new(MockKey), value: "five #1"},
+				{key: new(MockKey), value: "five #3"},
 			},
 			wantBucketsTwo: []bucket{
 				{key: new(MockKey), value: "five #3"},
@@ -495,13 +552,13 @@ func TestConcurrentHashMap_Iterate_order(test *testing.T) {
 			randomSeedOne: 1,
 			randomSeedTwo: 2,
 			wantBucketsOne: []bucket{
-				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "six"},
+				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
 			wantBucketsTwo: []bucket{
-				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "seven"},
+				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "five"},
 			},
 		},
@@ -509,22 +566,26 @@ func TestConcurrentHashMap_Iterate_order(test *testing.T) {
 		test.Run(data.name, func(test *testing.T) {
 			var segments []Storage
 			for _, buckets := range data.fields.buckets {
-				innerMap := &HashMap{buckets: buckets}
+				innerMap := &HashMap{
+					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+					buckets: buckets,
+				}
 				segment := &SynchronizedHashMap{innerMap: innerMap}
 				segments = append(segments, segment)
 			}
 
-			hashMap := ConcurrentHashMap{segments: segments}
+			hashMap := ConcurrentHashMap{
+				config:   ConcurrentConfig{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+				segments: segments,
+			}
 
 			var gotBucketsOne []bucket
-			rand.Seed(data.randomSeedOne)
 			gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBucketsOne = append(gotBucketsOne, bucket{key, value})
 				return true
 			})
 
 			var gotBucketsTwo []bucket
-			rand.Seed(data.randomSeedTwo)
 			gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
 				gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
 				return true

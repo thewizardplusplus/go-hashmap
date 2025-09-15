@@ -2,7 +2,7 @@ package hashmap
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"testing"
 )
@@ -24,7 +24,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap ConcurrentHashMap) {
-				hashMap.Get(IntKey(rand.Intn(sizeForSyncBench)))
+				hashMap.Get(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 		{
@@ -61,7 +61,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap ConcurrentHashMap) {
-				hashMap.Delete(IntKey(rand.Intn(sizeForSyncBench)))
+				hashMap.Delete(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 	} {

@@ -1,15 +1,11 @@
 package hashmap
 
-import (
-	"math/rand"
-)
-
 // ConcurrentHashMap ...
 //
 // It's partially safe for concurrent access because it uses data sharding.
 // Each segment should take care of concurrent access safety itself.
-//
 type ConcurrentHashMap struct {
+	config   ConcurrentConfig
 	segments []Storage
 }
 
@@ -26,7 +22,7 @@ func NewConcurrentHashMap(options ...ConcurrentOption) ConcurrentHashMap {
 		segments = append(segments, segment)
 	}
 
-	return ConcurrentHashMap{segments: segments}
+	return ConcurrentHashMap{config: config, segments: segments}
 }
 
 // Get ...
@@ -39,9 +35,8 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 // If the handler returns false, iteration is broken.
 //
 // It randomizes of iteration order over items and their keys and over segments.
-//
 func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
-	for _, index := range rand.Perm(len(hashMap.segments)) {
+	for _, index := range hashMap.config.permuter(len(hashMap.segments)) {
 		segment := hashMap.segments[index]
 		if ok := segment.Iterate(handler); !ok {
 			return false
