@@ -36,35 +36,28 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.innerMap.Get(key)
 }
 
-// Iterate ...
-//
-// If the handler returns false, iteration is broken.
+// All ...
 //
 // It randomizes of iteration order.
 //
 // A mutex lock is using only for iteration, not for handling (the handler
 // is called out of lock).
-func (hashMap *SynchronizedHashMap) Iterate(handler Handler) bool {
-	hashMap.lock.RLock()
-	defer hashMap.lock.RUnlock()
+func (hashMap *SynchronizedHashMap) All() iter.Seq2[Key, interface{}] {
+	return func(yield func(Key, interface{}) bool) {
+		hashMap.lock.RLock()
+		defer hashMap.lock.RUnlock()
 
-	for key, value := range hashMap.innerMap.All() {
-		if ok := func() bool {
-			hashMap.lock.RUnlock()
-			defer hashMap.lock.RLock()
+		for key, value := range hashMap.innerMap.All() {
+			if ok := func() bool {
+				hashMap.lock.RUnlock()
+				defer hashMap.lock.RLock()
 
-			return handler(key, value)
-		}(); !ok {
-			return false
+				return yield(key, value)
+			}(); !ok {
+				break
+			}
 		}
 	}
-
-	return true
-}
-
-// All ...
-func (hashMap *SynchronizedHashMap) All() iter.Seq2[Key, interface{}] {
-	panic("not yet implemented")
 }
 
 // Set ...

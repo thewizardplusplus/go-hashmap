@@ -2,6 +2,7 @@ package hashmap
 
 import (
 	"fmt"
+	"iter"
 	"math/rand/v2"
 	"sync"
 	"testing"
@@ -24,22 +25,22 @@ func (builtinMap *SynchronizedBuiltinMap) Get(key int) int {
 	return builtinMap.innerMap[key]
 }
 
-func (builtinMap *SynchronizedBuiltinMap) Iterate(
-	handler func(key int, value int) bool,
-) bool {
-	builtinMap.lock.RLock()
-	defer builtinMap.lock.RUnlock()
-
-	for key, value := range builtinMap.innerMap {
-		builtinMap.lock.RUnlock()
-		ok := handler(key, value)
+func (builtinMap *SynchronizedBuiltinMap) All() iter.Seq2[int, int] {
+	return func(yield func(int, int) bool) {
 		builtinMap.lock.RLock()
-		if !ok {
-			return false
+		defer builtinMap.lock.RUnlock()
+
+		for key, value := range builtinMap.innerMap {
+			if ok := func() bool {
+				builtinMap.lock.RUnlock()
+				defer builtinMap.lock.RLock()
+
+				return yield(key, value)
+			}(); !ok {
+				break
+			}
 		}
 	}
-
-	return true
 }
 
 func (builtinMap *SynchronizedBuiltinMap) Set(key int, value int) {
@@ -81,7 +82,7 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func() *SynchronizedBuiltinMap {
 				builtinMap := NewSynchronizedBuiltinMap()
 				for i := 0; i < sizeForSyncBench; i++ {
@@ -91,7 +92,8 @@ func BenchmarkSynchronizedBuiltinMap(benchmark *testing.B) {
 				return builtinMap
 			},
 			benchmark: func(builtinMap *SynchronizedBuiltinMap) {
-				builtinMap.Iterate(func(key int, value int) bool { return true })
+				for range builtinMap.All() {
+				}
 			},
 		},
 		{
@@ -165,7 +167,7 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func() *sync.Map {
 				syncMap := new(sync.Map)
 				for i := 0; i < sizeForSyncBench; i++ {
@@ -175,7 +177,8 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 				return syncMap
 			},
 			benchmark: func(syncMap *sync.Map) {
-				syncMap.Range(func(key interface{}, value interface{}) bool { return true })
+				for range syncMap.Range {
+				}
 			},
 		},
 		{
@@ -247,7 +250,7 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func() *SynchronizedHashMap {
 				hashMap := NewSynchronizedHashMap()
 				for i := 0; i < sizeForSyncBench; i++ {
@@ -257,7 +260,8 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap *SynchronizedHashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
+				for range hashMap.All() {
+				}
 			},
 		},
 		{

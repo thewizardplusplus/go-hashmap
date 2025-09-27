@@ -187,7 +187,7 @@ func TestSynchronizedHashMap(test *testing.T) {
 	}
 }
 
-func TestSynchronizedHashMap_Iterate(test *testing.T) {
+func TestSynchronizedHashMap_All(test *testing.T) {
 	type fields struct {
 		buckets []*bucket
 	}
@@ -197,7 +197,6 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 		fields           fields
 		interruptOnCount int
 		wantBuckets      []bucket
-		wantOk           assert.BoolAssertionFunc
 	}{
 		{
 			name: "without buckets",
@@ -206,7 +205,6 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets:      nil,
-			wantOk:           assert.True,
 		},
 		{
 			name: "with few buckets and without an interrupt",
@@ -223,7 +221,6 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
-			wantOk: assert.True,
 		},
 		{
 			name: "with few buckets and with an interrupt",
@@ -239,7 +236,6 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "five"},
 			},
-			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
@@ -249,11 +245,13 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				buckets: data.fields.buckets,
 			}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
-			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
+			for key, value := range hashMap.All() {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 				// interrupt after a specified count of got buckets
-				return len(gotBuckets) < data.interruptOnCount
-			})
+				if len(gotBuckets) >= data.interruptOnCount {
+					break
+				}
+			}
 
 			for _, bucket := range data.fields.buckets {
 				if bucket != nil {
@@ -261,12 +259,11 @@ func TestSynchronizedHashMap_Iterate(test *testing.T) {
 				}
 			}
 			assert.Equal(test, data.wantBuckets, gotBuckets)
-			data.wantOk(test, gotOk)
 		})
 	}
 }
 
-func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
+func TestSynchronizedHashMap_All_order(test *testing.T) {
 	innerMap := HashMap{
 		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 		buckets: []*bucket{
@@ -278,16 +275,14 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 	hashMap := SynchronizedHashMap{innerMap: &innerMap}
 
 	var gotBucketsOne []bucket
-	gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
+	for key, value := range hashMap.All() {
 		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
-		return true
-	})
+	}
 
 	var gotBucketsTwo []bucket
-	gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
+	for key, value := range hashMap.All() {
 		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
-		return true
-	})
+	}
 
 	for _, bucket := range hashMap.innerMap.(*HashMap).buckets {
 		if bucket != nil {
@@ -301,7 +296,6 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 		{key: new(MockKey), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
-	assert.True(test, gotOkOne)
 
 	wantBucketsTwo := []bucket{
 		{key: new(MockKey), value: "seven"},
@@ -309,5 +303,4 @@ func TestSynchronizedHashMap_Iterate_order(test *testing.T) {
 		{key: new(MockKey), value: "five"},
 	}
 	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)
-	assert.True(test, gotOkTwo)
 }
