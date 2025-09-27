@@ -1,6 +1,7 @@
 package hashmap
 
 import (
+	"iter"
 	"sync"
 )
 
@@ -8,7 +9,6 @@ import (
 //
 // It's safe for concurrent access because it uses a mutex lock to access
 // the inner map.
-//
 type SynchronizedHashMap struct {
 	lock     sync.RWMutex
 	innerMap Storage
@@ -44,17 +44,27 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 //
 // A mutex lock is using only for iteration, not for handling (the handler
 // is called out of lock).
-//
 func (hashMap *SynchronizedHashMap) Iterate(handler Handler) bool {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
 
-	return hashMap.innerMap.Iterate(func(key Key, value interface{}) bool {
-		hashMap.lock.RUnlock()
-		defer hashMap.lock.RLock()
+	for key, value := range hashMap.innerMap.All() {
+		if ok := func() bool {
+			hashMap.lock.RUnlock()
+			defer hashMap.lock.RLock()
 
-		return handler(key, value)
-	})
+			return handler(key, value)
+		}(); !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+// All ...
+func (hashMap *SynchronizedHashMap) All() iter.Seq2[Key, interface{}] {
+	panic("not yet implemented")
 }
 
 // Set ...

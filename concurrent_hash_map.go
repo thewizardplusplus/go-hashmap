@@ -38,8 +38,10 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
 	for _, index := range hashMap.config.permuter(len(hashMap.segments)) {
 		segment := hashMap.segments[index]
-		if ok := segment.Iterate(handler); !ok {
-			return false
+		for key, value := range segment.All() {
+			if ok := handler(key, value); !ok {
+				return false
+			}
 		}
 	}
 

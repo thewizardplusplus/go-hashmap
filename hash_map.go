@@ -1,5 +1,9 @@
 package hashmap
 
+import (
+	"iter"
+)
+
 type bucket struct {
 	key   Key
 	value interface{}
@@ -34,24 +38,22 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.buckets[index].value, true
 }
 
-// Iterate ...
-//
-// If the handler returns false, iteration is broken.
+// All ...
 //
 // It randomizes of iteration order.
-func (hashMap HashMap) Iterate(handler Handler) bool {
-	for _, index := range hashMap.config.permuter(len(hashMap.buckets)) {
-		bucket := hashMap.buckets[index]
-		if bucket == nil {
-			continue
-		}
+func (hashMap HashMap) All() iter.Seq2[Key, interface{}] {
+	return func(yield func(Key, interface{}) bool) {
+		for _, index := range hashMap.config.permuter(len(hashMap.buckets)) {
+			bucket := hashMap.buckets[index]
+			if bucket == nil {
+				continue
+			}
 
-		if ok := handler(bucket.key, bucket.value); !ok {
-			return false
+			if ok := yield(bucket.key, bucket.value); !ok {
+				break
+			}
 		}
 	}
-
-	return true
 }
 
 // Set ...
@@ -98,10 +100,9 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 func (hashMap *HashMap) rehash() {
 	newCapacity := int(float64(len(hashMap.buckets)) * hashMap.config.growFactor)
 	newHashMap := newHashMapWithCapacity(hashMap.config, newCapacity)
-	hashMap.Iterate(func(key Key, value interface{}) bool {
+	for key, value := range hashMap.All() {
 		newHashMap.Set(key, value)
-		return true
-	})
+	}
 
 	*hashMap = *newHashMap
 }

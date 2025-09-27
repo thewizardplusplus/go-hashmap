@@ -261,7 +261,7 @@ func TestHashMap_Get(test *testing.T) {
 	}
 }
 
-func TestHashMap_Iterate(test *testing.T) {
+func TestHashMap_All(test *testing.T) {
 	type fields struct {
 		buckets []*bucket
 	}
@@ -271,7 +271,6 @@ func TestHashMap_Iterate(test *testing.T) {
 		fields           fields
 		interruptOnCount int
 		wantBuckets      []bucket
-		wantOk           assert.BoolAssertionFunc
 	}{
 		{
 			name: "without buckets",
@@ -280,7 +279,6 @@ func TestHashMap_Iterate(test *testing.T) {
 			},
 			interruptOnCount: 10,
 			wantBuckets:      nil,
-			wantOk:           assert.True,
 		},
 		{
 			name: "with few buckets and without an interrupt",
@@ -297,7 +295,6 @@ func TestHashMap_Iterate(test *testing.T) {
 				{key: new(MockKey), value: "five"},
 				{key: new(MockKey), value: "seven"},
 			},
-			wantOk: assert.True,
 		},
 		{
 			name: "with few buckets and with an interrupt",
@@ -313,7 +310,6 @@ func TestHashMap_Iterate(test *testing.T) {
 				{key: new(MockKey), value: "six"},
 				{key: new(MockKey), value: "five"},
 			},
-			wantOk: assert.False,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
@@ -322,11 +318,13 @@ func TestHashMap_Iterate(test *testing.T) {
 				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 				buckets: data.fields.buckets,
 			}
-			gotOk := hashMap.Iterate(func(key Key, value interface{}) bool {
+			for key, value := range hashMap.All() {
 				gotBuckets = append(gotBuckets, bucket{key, value})
 				// interrupt after a specified count of got buckets
-				return len(gotBuckets) < data.interruptOnCount
-			})
+				if len(gotBuckets) >= data.interruptOnCount {
+					break
+				}
+			}
 
 			for _, bucket := range data.fields.buckets {
 				if bucket != nil {
@@ -334,12 +332,11 @@ func TestHashMap_Iterate(test *testing.T) {
 				}
 			}
 			assert.Equal(test, data.wantBuckets, gotBuckets)
-			data.wantOk(test, gotOk)
 		})
 	}
 }
 
-func TestHashMap_Iterate_order(test *testing.T) {
+func TestHashMap_All_order(test *testing.T) {
 	hashMap := HashMap{
 		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 		buckets: []*bucket{
@@ -350,16 +347,14 @@ func TestHashMap_Iterate_order(test *testing.T) {
 	}
 
 	var gotBucketsOne []bucket
-	gotOkOne := hashMap.Iterate(func(key Key, value interface{}) bool {
+	for key, value := range hashMap.All() {
 		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
-		return true
-	})
+	}
 
 	var gotBucketsTwo []bucket
-	gotOkTwo := hashMap.Iterate(func(key Key, value interface{}) bool {
+	for key, value := range hashMap.All() {
 		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
-		return true
-	})
+	}
 
 	for _, bucket := range hashMap.buckets {
 		if bucket != nil {
@@ -373,7 +368,6 @@ func TestHashMap_Iterate_order(test *testing.T) {
 		{key: new(MockKey), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
-	assert.True(test, gotOkOne)
 
 	wantBucketsTwo := []bucket{
 		{key: new(MockKey), value: "seven"},
@@ -381,7 +375,6 @@ func TestHashMap_Iterate_order(test *testing.T) {
 		{key: new(MockKey), value: "five"},
 	}
 	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)
-	assert.True(test, gotOkTwo)
 }
 
 func TestHashMap_Set(test *testing.T) {

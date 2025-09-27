@@ -42,7 +42,7 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func(size int) map[int]int {
 				builtinMap := make(map[int]int)
 				for i := 0; i < size; i++ {
@@ -115,7 +115,7 @@ func BenchmarkHashMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func(size int) *HashMap {
 				hashMap := NewHashMap()
 				for i := 0; i < size; i++ {
@@ -125,7 +125,8 @@ func BenchmarkHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(size int, hashMap *HashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
+				for range hashMap.All() {
+				}
 			},
 		},
 		{
