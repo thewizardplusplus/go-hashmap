@@ -28,7 +28,7 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 			},
 		},
 		{
-			name: "Iterate",
+			name: "All",
 			prepare: func() ConcurrentHashMap {
 				hashMap := NewConcurrentHashMap()
 				for i := 0; i < sizeForSyncBench; i++ {
@@ -38,7 +38,8 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 				return hashMap
 			},
 			benchmark: func(hashMap ConcurrentHashMap) {
-				hashMap.Iterate(func(key Key, value interface{}) bool { return true })
+				for range hashMap.All() {
+				}
 			},
 		},
 		{

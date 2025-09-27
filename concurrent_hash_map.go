@@ -1,5 +1,9 @@
 package hashmap
 
+import (
+	"iter"
+)
+
 // ConcurrentHashMap ...
 //
 // It's partially safe for concurrent access because it uses data sharding.
@@ -30,22 +34,21 @@ func (hashMap ConcurrentHashMap) Get(key Key) (value interface{}, ok bool) {
 	return hashMap.selectSegment(key).Get(key)
 }
 
-// Iterate ...
-//
-// If the handler returns false, iteration is broken.
+// All ...
 //
 // It randomizes of iteration order over items and their keys and over segments.
-func (hashMap ConcurrentHashMap) Iterate(handler Handler) bool {
-	for _, index := range hashMap.config.permuter(len(hashMap.segments)) {
-		segment := hashMap.segments[index]
-		for key, value := range segment.All() {
-			if ok := handler(key, value); !ok {
-				return false
+func (hashMap ConcurrentHashMap) All() iter.Seq2[Key, interface{}] {
+	return func(yield func(Key, interface{}) bool) {
+	outerLoop:
+		for _, index := range hashMap.config.permuter(len(hashMap.segments)) {
+			segment := hashMap.segments[index]
+			for key, value := range segment.All() {
+				if ok := yield(key, value); !ok {
+					break outerLoop
+				}
 			}
 		}
 	}
-
-	return true
 }
 
 // Set ...
