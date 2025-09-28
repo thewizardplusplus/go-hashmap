@@ -1,0 +1,11 @@
+all: true
+recursive: true
+force-file-write: true
+dir: "{{ .InterfaceDir }}"
+filename: "mock_{{ .InterfaceName }}_test.go"
+pkgname: "{{ .SrcPackageName }}"
+structname: "Mock{{ .InterfaceName }}"
+template: testify
+formatter: "goimports"
+packages:
+  github.com/thewizardplusplus/go-hashmap/v2:

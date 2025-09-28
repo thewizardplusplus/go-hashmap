@@ -10,152 +10,159 @@ import (
 
 func TestNewConcurrentHashMap(test *testing.T) {
 	type args struct {
-		options []ConcurrentOption
+		options func(test *testing.T) []ConcurrentOption
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want ConcurrentHashMap
+		want func(test *testing.T) ConcurrentHashMap
 	}{
 		{
 			name: "with the default config",
 			args: args{
-				options: nil,
+				options: func(test *testing.T) []ConcurrentOption { return nil },
 			},
-			want: ConcurrentHashMap{
-				config: func() ConcurrentConfig {
-					config := defaultConcurrentConfig
-					config.segmentFactory = nil
-					config.permuter = nil
+			want: func(test *testing.T) ConcurrentHashMap {
+				return ConcurrentHashMap{
+					config: func() ConcurrentConfig {
+						config := defaultConcurrentConfig
+						config.segmentFactory = nil
+						config.permuter = nil
 
-					return config
-				}(),
-				segments: func() []Storage {
-					var segments []Storage
-					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
-						segments = append(segments, &SynchronizedHashMap{
-							innerMap: &HashMap{
-								config: func() Config {
-									config := defaultConfig
-									config.permuter = nil
+						return config
+					}(),
+					segments: func() []Storage {
+						var segments []Storage
+						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+							segments = append(segments, &SynchronizedHashMap{
+								innerMap: &HashMap{
+									config: func() Config {
+										config := defaultConfig
+										config.permuter = nil
 
-									return config
-								}(),
-								buckets: make([]*bucket, defaultConfig.initialCapacity),
-								size:    0,
-							},
-						})
-					}
+										return config
+									}(),
+									buckets: make([]*bucket, defaultConfig.initialCapacity),
+									size:    0,
+								},
+							})
+						}
 
-					return segments
-				}(),
+						return segments
+					}(),
+				}
 			},
 		},
 		{
 			name: "with the set concurrency level",
 			args: args{
-				options: []ConcurrentOption{WithConcurrencyLevel(23)},
+				options: func(test *testing.T) []ConcurrentOption {
+					return []ConcurrentOption{WithConcurrencyLevel(23)}
+				},
 			},
-			want: ConcurrentHashMap{
-				config: func() ConcurrentConfig {
-					config := defaultConcurrentConfig
-					config.concurrencyLevel = 23
-					config.segmentFactory = nil
-					config.permuter = nil
+			want: func(test *testing.T) ConcurrentHashMap {
+				return ConcurrentHashMap{
+					config: func() ConcurrentConfig {
+						config := defaultConcurrentConfig
+						config.concurrencyLevel = 23
+						config.segmentFactory = nil
+						config.permuter = nil
 
-					return config
-				}(),
-				segments: func() []Storage {
-					var segments []Storage
-					for i := 0; i < 23; i++ {
-						segments = append(segments, &SynchronizedHashMap{
-							innerMap: &HashMap{
-								config: func() Config {
-									config := defaultConfig
-									config.permuter = nil
+						return config
+					}(),
+					segments: func() []Storage {
+						var segments []Storage
+						for i := 0; i < 23; i++ {
+							segments = append(segments, &SynchronizedHashMap{
+								innerMap: &HashMap{
+									config: func() Config {
+										config := defaultConfig
+										config.permuter = nil
 
-									return config
-								}(),
-								buckets: make([]*bucket, defaultConfig.initialCapacity),
-								size:    0,
-							},
-						})
-					}
+										return config
+									}(),
+									buckets: make([]*bucket, defaultConfig.initialCapacity),
+									size:    0,
+								},
+							})
+						}
 
-					return segments
-				}(),
+						return segments
+					}(),
+				}
 			},
 		},
 		{
 			name: "with the set segment factory",
 			args: args{
-				options: []ConcurrentOption{
-					WithSegmentFactory(func() Storage { return new(MockStorage) }),
+				options: func(test *testing.T) []ConcurrentOption {
+					return []ConcurrentOption{
+						WithSegmentFactory(func() Storage { return NewMockStorage(test) }),
+					}
 				},
 			},
-			want: ConcurrentHashMap{
-				config: func() ConcurrentConfig {
-					config := defaultConcurrentConfig
-					config.segmentFactory = nil
-					config.permuter = nil
+			want: func(test *testing.T) ConcurrentHashMap {
+				return ConcurrentHashMap{
+					config: func() ConcurrentConfig {
+						config := defaultConcurrentConfig
+						config.segmentFactory = nil
+						config.permuter = nil
 
-					return config
-				}(),
-				segments: func() []Storage {
-					var segments []Storage
-					for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
-						segments = append(segments, new(MockStorage))
-					}
+						return config
+					}(),
+					segments: func() []Storage {
+						var segments []Storage
+						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+							segments = append(segments, NewMockStorage(test))
+						}
 
-					return segments
-				}(),
+						return segments
+					}(),
+				}
 			},
 		},
 		{
 			name: "with the set config",
 			args: args{
-				options: []ConcurrentOption{
-					WithConcurrencyLevel(23),
-					WithSegmentFactory(func() Storage { return new(MockStorage) }),
-					WithConcurrentPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
+				options: func(test *testing.T) []ConcurrentOption {
+					return []ConcurrentOption{
+						WithConcurrencyLevel(23),
+						WithSegmentFactory(func() Storage { return NewMockStorage(test) }),
+						WithConcurrentPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
+					}
 				},
 			},
-			want: ConcurrentHashMap{
-				config: func() ConcurrentConfig {
-					config := defaultConcurrentConfig
-					config.concurrencyLevel = 23
-					config.segmentFactory = nil
-					config.permuter = nil
+			want: func(test *testing.T) ConcurrentHashMap {
+				return ConcurrentHashMap{
+					config: func() ConcurrentConfig {
+						config := defaultConcurrentConfig
+						config.concurrencyLevel = 23
+						config.segmentFactory = nil
+						config.permuter = nil
 
-					return config
-				}(),
-				segments: func() []Storage {
-					var segments []Storage
-					for i := 0; i < 23; i++ {
-						segments = append(segments, new(MockStorage))
-					}
+						return config
+					}(),
+					segments: func() []Storage {
+						var segments []Storage
+						for i := 0; i < 23; i++ {
+							segments = append(segments, NewMockStorage(test))
+						}
 
-					return segments
-				}(),
+						return segments
+					}(),
+				}
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			got := NewConcurrentHashMap(data.args.options...)
+			got := NewConcurrentHashMap(data.args.options(test)...)
 
 			for _, segment := range got.segments {
 				if typedSegment, ok := segment.(*SynchronizedHashMap); ok {
 					if innerMap, ok := typedSegment.innerMap.(*HashMap); ok {
 						innerMap.config.permuter = nil
 					}
-				}
-
-				_, ok := segment.(interface {
-					AssertExpectations(assert.TestingT) bool // nolint: staticcheck
-				})
-				if ok {
-					mock.AssertExpectationsForObjects(test, segment)
 				}
 			}
 
@@ -165,7 +172,7 @@ func TestNewConcurrentHashMap(test *testing.T) {
 			assert.NotNil(test, got.config.permuter)
 			got.config.permuter = nil
 
-			assert.Equal(test, data.want, got)
+			assert.Equal(test, data.want(test), got)
 		})
 	}
 }
@@ -178,17 +185,19 @@ func TestConcurrentHashMap(test *testing.T) {
 
 	for _, data := range []struct {
 		name                string
-		makeHashMap         func() ConcurrentHashMap
-		makeKeys            func() []Key
+		hashMap             func(test *testing.T) ConcurrentHashMap
+		keys                func(test *testing.T) []Key
 		wantTouchedSegments map[int]struct{}
 		wantResults         []result
 	}{
 		{
-			name:        "getting by a nonexistent key",
-			makeHashMap: func() ConcurrentHashMap { return NewConcurrentHashMap() },
-			makeKeys: func() []Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			name: "getting by a nonexistent key",
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				return NewConcurrentHashMap()
+			},
+			keys: func(test *testing.T) []Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return []Key{key}
 			},
@@ -197,20 +206,20 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by a nonexistent key",
-			makeHashMap: func() ConcurrentHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 				// it's called inside the HashMap.Get() method below
-				key.On("Equals", mock.Anything).Return(true)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Set(key, "five")
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return []Key{key}
 			},
@@ -219,10 +228,10 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by an existing key",
-			makeHashMap: func() ConcurrentHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
-				key.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Set(key, "five #1")
@@ -230,9 +239,9 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return []Key{key}
 			},
@@ -241,14 +250,14 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by keys touched different segments",
-			makeHashMap: func() ConcurrentHashMap {
-				fiveKey := new(MockKey)
-				fiveKey.On("Hash").Return(5)
-				fiveKey.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				fiveKey := NewMockKey(test)
+				fiveKey.EXPECT().Hash().Return(5)
+				fiveKey.EXPECT().Equals(mock.Anything).Return(true)
 
-				sixKey := new(MockKey)
-				sixKey.On("Hash").Return(6)
-				sixKey.On("Equals", mock.Anything).Return(true)
+				sixKey := NewMockKey(test)
+				sixKey.EXPECT().Hash().Return(6)
+				sixKey.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Set(fiveKey, "five")
@@ -256,12 +265,12 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				fiveKey := new(MockKey)
-				fiveKey.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				fiveKey := NewMockKey(test)
+				fiveKey.EXPECT().Hash().Return(5)
 
-				sixKey := new(MockKey)
-				sixKey.On("Hash").Return(6)
+				sixKey := NewMockKey(test)
+				sixKey.EXPECT().Hash().Return(6)
 
 				return []Key{fiveKey, sixKey}
 			},
@@ -270,18 +279,18 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by a nonexistent key",
-			makeHashMap: func() ConcurrentHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Delete(key)
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return []Key{key}
 			},
@@ -290,10 +299,10 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by an existing key",
-			makeHashMap: func() ConcurrentHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
-				key.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Set(key, "five")
@@ -301,9 +310,9 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return []Key{key}
 			},
@@ -312,14 +321,14 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by keys touched different segments",
-			makeHashMap: func() ConcurrentHashMap {
-				fiveKey := new(MockKey)
-				fiveKey.On("Hash").Return(5)
-				fiveKey.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) ConcurrentHashMap {
+				fiveKey := NewMockKey(test)
+				fiveKey.EXPECT().Hash().Return(5)
+				fiveKey.EXPECT().Equals(mock.Anything).Return(true)
 
-				sixKey := new(MockKey)
-				sixKey.On("Hash").Return(6)
-				sixKey.On("Equals", mock.Anything).Return(true)
+				sixKey := NewMockKey(test)
+				sixKey.EXPECT().Hash().Return(6)
+				sixKey.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewConcurrentHashMap()
 				hashMap.Set(fiveKey, "five")
@@ -329,12 +338,12 @@ func TestConcurrentHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKeys: func() []Key {
-				fiveKey := new(MockKey)
-				fiveKey.On("Hash").Return(5)
+			keys: func(test *testing.T) []Key {
+				fiveKey := NewMockKey(test)
+				fiveKey.EXPECT().Hash().Return(5)
 
-				sixKey := new(MockKey)
-				sixKey.On("Hash").Return(6)
+				sixKey := NewMockKey(test)
+				sixKey.EXPECT().Hash().Return(6)
 
 				return []Key{fiveKey, sixKey}
 			},
@@ -343,30 +352,21 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			hashMap := data.makeHashMap()
-			keys := data.makeKeys()
+			hashMap := data.hashMap(test)
 
 			var results []result
-			for _, key := range keys {
+			for _, key := range data.keys(test) {
 				gotValue, gotOk := hashMap.Get(key)
 				results = append(results, result{gotValue, gotOk})
 			}
 
 			for index, segment := range hashMap.segments {
 				innerMap := segment.(*SynchronizedHashMap).innerMap.(*HashMap)
-				for _, bucket := range innerMap.buckets {
-					if bucket != nil {
-						mock.AssertExpectationsForObjects(test, bucket.key)
-					}
-				}
 				if _, ok := data.wantTouchedSegments[index]; ok {
 					assert.NotZero(test, innerMap.size)
 				} else {
 					assert.Zero(test, innerMap.size)
 				}
-			}
-			for _, key := range keys {
-				mock.AssertExpectationsForObjects(test, key)
 			}
 			assert.Equal(test, data.wantResults, results)
 		})
@@ -375,96 +375,114 @@ func TestConcurrentHashMap(test *testing.T) {
 
 func TestConcurrentHashMap_All(test *testing.T) {
 	type fields struct {
-		buckets [][]*bucket
+		buckets func(test *testing.T) [][]*bucket
 	}
 
 	for _, data := range []struct {
 		name             string
 		fields           fields
 		interruptOnCount int
-		wantBuckets      []bucket
+		wantBuckets      func(test *testing.T) []bucket
 	}{
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: [][]*bucket{
-					make([]*bucket, defaultConfig.initialCapacity),
-					make([]*bucket, defaultConfig.initialCapacity),
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						make([]*bucket, defaultConfig.initialCapacity),
+						make([]*bucket, defaultConfig.initialCapacity),
+					}
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets:      nil,
+			wantBuckets:      func(test *testing.T) []bucket { return nil },
 		},
 		{
 			name: "with few buckets in the same segment and without an interrupt",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {
-						5: {key: new(MockKey), value: "five #1"},
-						6: {key: new(MockKey), value: "five #2"},
-						7: {key: new(MockKey), value: "five #3"},
-					},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {
+							5: {key: NewMockKey(test), value: "five #1"},
+							6: {key: NewMockKey(test), value: "five #2"},
+							7: {key: NewMockKey(test), value: "five #3"},
+						},
+					}
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #2"},
-				{key: new(MockKey), value: "five #1"},
-				{key: new(MockKey), value: "five #3"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "five #2"},
+					{key: NewMockKey(test), value: "five #1"},
+					{key: NewMockKey(test), value: "five #3"},
+				}
 			},
 		},
 		{
 			name: "with few buckets in the same segment and with an interrupt",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {
-						5: {key: new(MockKey), value: "five #1"},
-						6: {key: new(MockKey), value: "five #2"},
-						7: {key: new(MockKey), value: "five #3"},
-					},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {
+							5: {key: NewMockKey(test), value: "five #1"},
+							6: {key: NewMockKey(test), value: "five #2"},
+							7: {key: NewMockKey(test), value: "five #3"},
+						},
+					}
 				},
 			},
 			interruptOnCount: 2,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "five #2"},
-				{key: new(MockKey), value: "five #1"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "five #2"},
+					{key: NewMockKey(test), value: "five #1"},
+				}
 			},
 		},
 		{
 			name: "with few buckets in different segments and without an interrupt",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {5: {key: new(MockKey), value: "five"}},
-					6: {6: {key: new(MockKey), value: "six"}},
-					7: {7: {key: new(MockKey), value: "seven"}},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {5: {key: NewMockKey(test), value: "five"}},
+						6: {6: {key: NewMockKey(test), value: "six"}},
+						7: {7: {key: NewMockKey(test), value: "seven"}},
+					}
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
-				{key: new(MockKey), value: "seven"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+					{key: NewMockKey(test), value: "seven"},
+				}
 			},
 		},
 		{
 			name: "with few buckets in different segments and with an interrupt",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {5: {key: new(MockKey), value: "five"}},
-					6: {6: {key: new(MockKey), value: "six"}},
-					7: {7: {key: new(MockKey), value: "seven"}},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {5: {key: NewMockKey(test), value: "five"}},
+						6: {6: {key: NewMockKey(test), value: "six"}},
+						7: {7: {key: NewMockKey(test), value: "seven"}},
+					}
 				},
 			},
 			interruptOnCount: 2,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+				}
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			var segments []Storage
-			for _, buckets := range data.fields.buckets {
+			for _, buckets := range data.fields.buckets(test) {
 				innerMap := &HashMap{
 					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 					buckets: buckets,
@@ -486,21 +504,14 @@ func TestConcurrentHashMap_All(test *testing.T) {
 				}
 			}
 
-			for _, buckets := range data.fields.buckets {
-				for _, bucket := range buckets {
-					if bucket != nil {
-						mock.AssertExpectationsForObjects(test, bucket.key)
-					}
-				}
-			}
-			assert.Equal(test, data.wantBuckets, gotBuckets)
+			assert.Equal(test, data.wantBuckets(test), gotBuckets)
 		})
 	}
 }
 
 func TestConcurrentHashMap_All_order(test *testing.T) {
 	type fields struct {
-		buckets [][]*bucket
+		buckets func(test *testing.T) [][]*bucket
 	}
 
 	for _, data := range []struct {
@@ -508,59 +519,71 @@ func TestConcurrentHashMap_All_order(test *testing.T) {
 		fields         fields
 		randomSeedOne  int64
 		randomSeedTwo  int64
-		wantBucketsOne []bucket
-		wantBucketsTwo []bucket
+		wantBucketsOne func(test *testing.T) []bucket
+		wantBucketsTwo func(test *testing.T) []bucket
 	}{
 		{
 			name: "with few buckets in the same segment",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {
-						5: {key: new(MockKey), value: "five #1"},
-						6: {key: new(MockKey), value: "five #2"},
-						7: {key: new(MockKey), value: "five #3"},
-					},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {
+							5: {key: NewMockKey(test), value: "five #1"},
+							6: {key: NewMockKey(test), value: "five #2"},
+							7: {key: NewMockKey(test), value: "five #3"},
+						},
+					}
 				},
 			},
 			randomSeedOne: 1,
 			randomSeedTwo: 2,
-			wantBucketsOne: []bucket{
-				{key: new(MockKey), value: "five #2"},
-				{key: new(MockKey), value: "five #1"},
-				{key: new(MockKey), value: "five #3"},
+			wantBucketsOne: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "five #2"},
+					{key: NewMockKey(test), value: "five #1"},
+					{key: NewMockKey(test), value: "five #3"},
+				}
 			},
-			wantBucketsTwo: []bucket{
-				{key: new(MockKey), value: "five #3"},
-				{key: new(MockKey), value: "five #2"},
-				{key: new(MockKey), value: "five #1"},
+			wantBucketsTwo: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "five #3"},
+					{key: NewMockKey(test), value: "five #2"},
+					{key: NewMockKey(test), value: "five #1"},
+				}
 			},
 		},
 		{
 			name: "with few buckets in different segments",
 			fields: fields{
-				buckets: [][]*bucket{
-					5: {5: {key: new(MockKey), value: "five"}},
-					6: {6: {key: new(MockKey), value: "six"}},
-					7: {7: {key: new(MockKey), value: "seven"}},
+				buckets: func(test *testing.T) [][]*bucket {
+					return [][]*bucket{
+						5: {5: {key: NewMockKey(test), value: "five"}},
+						6: {6: {key: NewMockKey(test), value: "six"}},
+						7: {7: {key: NewMockKey(test), value: "seven"}},
+					}
 				},
 			},
 			randomSeedOne: 1,
 			randomSeedTwo: 2,
-			wantBucketsOne: []bucket{
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
-				{key: new(MockKey), value: "seven"},
+			wantBucketsOne: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+					{key: NewMockKey(test), value: "seven"},
+				}
 			},
-			wantBucketsTwo: []bucket{
-				{key: new(MockKey), value: "seven"},
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
+			wantBucketsTwo: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "seven"},
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+				}
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			var segments []Storage
-			for _, buckets := range data.fields.buckets {
+			for _, buckets := range data.fields.buckets(test) {
 				innerMap := &HashMap{
 					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 					buckets: buckets,
@@ -584,15 +607,8 @@ func TestConcurrentHashMap_All_order(test *testing.T) {
 				gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
 			}
 
-			for _, buckets := range data.fields.buckets {
-				for _, bucket := range buckets {
-					if bucket != nil {
-						mock.AssertExpectationsForObjects(test, bucket.key)
-					}
-				}
-			}
-			assert.Equal(test, data.wantBucketsOne, gotBucketsOne)
-			assert.Equal(test, data.wantBucketsTwo, gotBucketsTwo)
+			assert.Equal(test, data.wantBucketsOne(test), gotBucketsOne)
+			assert.Equal(test, data.wantBucketsTwo(test), gotBucketsTwo)
 		})
 	}
 }

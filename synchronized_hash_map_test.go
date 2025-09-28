@@ -10,73 +10,75 @@ import (
 
 func TestNewSynchronizedHashMap(test *testing.T) {
 	type args struct {
-		options []SynchronizedOption
+		options func(test *testing.T) []SynchronizedOption
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want *SynchronizedHashMap
+		want func(test *testing.T) *SynchronizedHashMap
 	}{
 		{
 			name: "with the default config",
 			args: args{
-				options: nil,
+				options: func(test *testing.T) []SynchronizedOption { return nil },
 			},
-			want: &SynchronizedHashMap{
-				innerMap: &HashMap{
-					config: func() Config {
-						config := defaultConfig
-						config.permuter = nil
+			want: func(test *testing.T) *SynchronizedHashMap {
+				return &SynchronizedHashMap{
+					innerMap: &HashMap{
+						config: func() Config {
+							config := defaultConfig
+							config.permuter = nil
 
-						return config
-					}(),
-					buckets: make([]*bucket, defaultConfig.initialCapacity),
-					size:    0,
-				},
+							return config
+						}(),
+						buckets: make([]*bucket, defaultConfig.initialCapacity),
+						size:    0,
+					},
+				}
 			},
 		},
 		{
 			name: "with the set inner map",
 			args: args{
-				options: []SynchronizedOption{WithInnerMap(new(MockStorage))},
+				options: func(test *testing.T) []SynchronizedOption {
+					return []SynchronizedOption{WithInnerMap(NewMockStorage(test))}
+				},
 			},
-			want: &SynchronizedHashMap{
-				innerMap: new(MockStorage),
+			want: func(test *testing.T) *SynchronizedHashMap {
+				return &SynchronizedHashMap{
+					innerMap: NewMockStorage(test),
+				}
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			got := NewSynchronizedHashMap(data.args.options...)
+			got := NewSynchronizedHashMap(data.args.options(test)...)
 			if innerMap, ok := got.innerMap.(*HashMap); ok {
 				innerMap.config.permuter = nil
 			}
 
-			_, ok := got.innerMap.(interface {
-				AssertExpectations(assert.TestingT) bool // nolint: staticcheck
-			})
-			if ok {
-				mock.AssertExpectationsForObjects(test, got.innerMap)
-			}
-			assert.Equal(test, data.want, got)
+			assert.Equal(test, data.want(test), got)
 		})
 	}
 }
 
 func TestSynchronizedHashMap(test *testing.T) {
 	for _, data := range []struct {
-		name        string
-		makeHashMap func() *SynchronizedHashMap
-		makeKey     func() Key
-		wantValue   interface{}
-		wantOk      assert.BoolAssertionFunc
+		name      string
+		hashMap   func(test *testing.T) *SynchronizedHashMap
+		key       func(test *testing.T) Key
+		wantValue interface{}
+		wantOk    assert.BoolAssertionFunc
 	}{
 		{
-			name:        "getting by a nonexistent key",
-			makeHashMap: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
-			makeKey: func() Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			name: "getting by a nonexistent key",
+			hashMap: func(test *testing.T) *SynchronizedHashMap {
+				return NewSynchronizedHashMap()
+			},
+			key: func(test *testing.T) Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return key
 			},
@@ -85,20 +87,20 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by a nonexistent key",
-			makeHashMap: func() *SynchronizedHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			hashMap: func(test *testing.T) *SynchronizedHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 				// it's called inside the HashMap.Get() method below
-				key.On("Equals", mock.Anything).Return(true)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five")
 
 				return hashMap
 			},
-			makeKey: func() Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			key: func(test *testing.T) Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return key
 			},
@@ -107,10 +109,10 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by an existing key",
-			makeHashMap: func() *SynchronizedHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
-				key.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) *SynchronizedHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five #1")
@@ -118,9 +120,9 @@ func TestSynchronizedHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			key: func(test *testing.T) Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return key
 			},
@@ -129,18 +131,18 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by a nonexistent key",
-			makeHashMap: func() *SynchronizedHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			hashMap: func(test *testing.T) *SynchronizedHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				hashMap := NewSynchronizedHashMap()
 				hashMap.Delete(key)
 
 				return hashMap
 			},
-			makeKey: func() Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			key: func(test *testing.T) Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return key
 			},
@@ -149,10 +151,10 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by an existing key",
-			makeHashMap: func() *SynchronizedHashMap {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
-				key.On("Equals", mock.Anything).Return(true)
+			hashMap: func(test *testing.T) *SynchronizedHashMap {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
+				key.EXPECT().Equals(mock.Anything).Return(true)
 
 				hashMap := NewSynchronizedHashMap()
 				hashMap.Set(key, "five")
@@ -160,9 +162,9 @@ func TestSynchronizedHashMap(test *testing.T) {
 
 				return hashMap
 			},
-			makeKey: func() Key {
-				key := new(MockKey)
-				key.On("Hash").Return(5)
+			key: func(test *testing.T) Key {
+				key := NewMockKey(test)
+				key.EXPECT().Hash().Return(5)
 
 				return key
 			},
@@ -171,16 +173,8 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			hashMap := data.makeHashMap()
-			key := data.makeKey()
-			gotValue, gotOk := hashMap.Get(key)
+			gotValue, gotOk := data.hashMap(test).Get(data.key(test))
 
-			for _, bucket := range hashMap.innerMap.(*HashMap).buckets {
-				if bucket != nil {
-					mock.AssertExpectationsForObjects(test, bucket.key)
-				}
-			}
-			mock.AssertExpectationsForObjects(test, key)
 			assert.Equal(test, data.wantValue, gotValue)
 			data.wantOk(test, gotOk)
 		})
@@ -189,52 +183,62 @@ func TestSynchronizedHashMap(test *testing.T) {
 
 func TestSynchronizedHashMap_All(test *testing.T) {
 	type fields struct {
-		buckets []*bucket
+		buckets func(test *testing.T) []*bucket
 	}
 
 	for _, data := range []struct {
 		name             string
 		fields           fields
 		interruptOnCount int
-		wantBuckets      []bucket
+		wantBuckets      func(test *testing.T) []bucket
 	}{
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				buckets: func(test *testing.T) []*bucket {
+					return make([]*bucket, defaultConfig.initialCapacity)
+				},
 			},
 			interruptOnCount: 10,
-			wantBuckets:      nil,
+			wantBuckets:      func(test *testing.T) []bucket { return nil },
 		},
 		{
 			name: "with few buckets and without an interrupt",
 			fields: fields{
-				buckets: []*bucket{
-					5: {key: new(MockKey), value: "five"},
-					6: {key: new(MockKey), value: "six"},
-					7: {key: new(MockKey), value: "seven"},
+				buckets: func(test *testing.T) []*bucket {
+					return []*bucket{
+						5: {key: NewMockKey(test), value: "five"},
+						6: {key: NewMockKey(test), value: "six"},
+						7: {key: NewMockKey(test), value: "seven"},
+					}
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
-				{key: new(MockKey), value: "seven"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+					{key: NewMockKey(test), value: "seven"},
+				}
 			},
 		},
 		{
 			name: "with few buckets and with an interrupt",
 			fields: fields{
-				buckets: []*bucket{
-					5: {key: new(MockKey), value: "five"},
-					6: {key: new(MockKey), value: "six"},
-					7: {key: new(MockKey), value: "seven"},
+				buckets: func(test *testing.T) []*bucket {
+					return []*bucket{
+						5: {key: NewMockKey(test), value: "five"},
+						6: {key: NewMockKey(test), value: "six"},
+						7: {key: NewMockKey(test), value: "seven"},
+					}
 				},
 			},
 			interruptOnCount: 2,
-			wantBuckets: []bucket{
-				{key: new(MockKey), value: "six"},
-				{key: new(MockKey), value: "five"},
+			wantBuckets: func(test *testing.T) []bucket {
+				return []bucket{
+					{key: NewMockKey(test), value: "six"},
+					{key: NewMockKey(test), value: "five"},
+				}
 			},
 		},
 	} {
@@ -242,7 +246,7 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 			var gotBuckets []bucket
 			innerMap := HashMap{
 				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
-				buckets: data.fields.buckets,
+				buckets: data.fields.buckets(test),
 			}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
 			for key, value := range hashMap.All() {
@@ -253,12 +257,7 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 				}
 			}
 
-			for _, bucket := range data.fields.buckets {
-				if bucket != nil {
-					mock.AssertExpectationsForObjects(test, bucket.key)
-				}
-			}
-			assert.Equal(test, data.wantBuckets, gotBuckets)
+			assert.Equal(test, data.wantBuckets(test), gotBuckets)
 		})
 	}
 }
@@ -267,9 +266,9 @@ func TestSynchronizedHashMap_All_order(test *testing.T) {
 	innerMap := HashMap{
 		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 		buckets: []*bucket{
-			5: {key: new(MockKey), value: "five"},
-			6: {key: new(MockKey), value: "six"},
-			7: {key: new(MockKey), value: "seven"},
+			5: {key: NewMockKey(test), value: "five"},
+			6: {key: NewMockKey(test), value: "six"},
+			7: {key: NewMockKey(test), value: "seven"},
 		},
 	}
 	hashMap := SynchronizedHashMap{innerMap: &innerMap}
@@ -284,23 +283,17 @@ func TestSynchronizedHashMap_All_order(test *testing.T) {
 		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
 	}
 
-	for _, bucket := range hashMap.innerMap.(*HashMap).buckets {
-		if bucket != nil {
-			mock.AssertExpectationsForObjects(test, bucket.key)
-		}
-	}
-
 	wantBucketsOne := []bucket{
-		{key: new(MockKey), value: "six"},
-		{key: new(MockKey), value: "five"},
-		{key: new(MockKey), value: "seven"},
+		{key: NewMockKey(test), value: "six"},
+		{key: NewMockKey(test), value: "five"},
+		{key: NewMockKey(test), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
 
 	wantBucketsTwo := []bucket{
-		{key: new(MockKey), value: "seven"},
-		{key: new(MockKey), value: "six"},
-		{key: new(MockKey), value: "five"},
+		{key: NewMockKey(test), value: "seven"},
+		{key: NewMockKey(test), value: "six"},
+		{key: NewMockKey(test), value: "five"},
 	}
 	assert.Equal(test, wantBucketsTwo, gotBucketsTwo)
 }

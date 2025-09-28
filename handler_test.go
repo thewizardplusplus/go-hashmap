@@ -5,27 +5,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type MockKeyWithID struct {
-	MockKey
-
-	ID int
-}
-
-func NewMockKeyWithID(id int) *MockKeyWithID {
-	return &MockKeyWithID{ID: id}
-}
 
 func TestWithInterruption(test *testing.T) {
 	type wrapperArgs struct {
 		ctx     context.Context
-		handler HandlerInterface
+		handler func(test *testing.T) handlerInterface
 	}
 	type handlerArgs struct {
-		key   Key
+		key   func(test *testing.T) Key
 		value interface{}
 	}
 
@@ -39,15 +28,15 @@ func TestWithInterruption(test *testing.T) {
 			name: "not interrupted and positive",
 			wrapperArgs: wrapperArgs{
 				ctx: context.Background(),
-				handler: func() HandlerInterface {
-					handler := new(MockHandlerInterface)
-					handler.On("Handle", NewMockKeyWithID(23), "data").Return(true)
+				handler: func(test *testing.T) handlerInterface {
+					handler := NewMockhandlerInterface(test)
+					handler.EXPECT().Handle(NewMockKey(test), "data").Return(true)
 
 					return handler
-				}(),
+				},
 			},
 			handlerArgs: handlerArgs{
-				key:   NewMockKeyWithID(23),
+				key:   func(test *testing.T) Key { return NewMockKey(test) },
 				value: "data",
 			},
 			want: assert.True,
@@ -56,15 +45,15 @@ func TestWithInterruption(test *testing.T) {
 			name: "not interrupted and negative",
 			wrapperArgs: wrapperArgs{
 				ctx: context.Background(),
-				handler: func() HandlerInterface {
-					handler := new(MockHandlerInterface)
-					handler.On("Handle", NewMockKeyWithID(23), "data").Return(false)
+				handler: func(test *testing.T) handlerInterface {
+					handler := NewMockhandlerInterface(test)
+					handler.EXPECT().Handle(NewMockKey(test), "data").Return(false)
 
 					return handler
-				}(),
+				},
 			},
 			handlerArgs: handlerArgs{
-				key:   NewMockKeyWithID(23),
+				key:   func(test *testing.T) Key { return NewMockKey(test) },
 				value: "data",
 			},
 			want: assert.False,
@@ -78,10 +67,12 @@ func TestWithInterruption(test *testing.T) {
 
 					return ctx
 				}(),
-				handler: new(MockHandlerInterface),
+				handler: func(test *testing.T) handlerInterface {
+					return NewMockhandlerInterface(test)
+				},
 			},
 			handlerArgs: handlerArgs{
-				key:   NewMockKeyWithID(23),
+				key:   func(test *testing.T) Key { return NewMockKey(test) },
 				value: "data",
 			},
 			want: assert.False,
@@ -90,17 +81,12 @@ func TestWithInterruption(test *testing.T) {
 		test.Run(data.name, func(test *testing.T) {
 			handler := WithInterruption(
 				data.wrapperArgs.ctx,
-				data.wrapperArgs.handler.Handle,
+				data.wrapperArgs.handler(test).Handle,
 			)
 			require.NotNil(test, handler)
 
-			got := handler(data.handlerArgs.key, data.handlerArgs.value)
+			got := handler(data.handlerArgs.key(test), data.handlerArgs.value)
 
-			mock.AssertExpectationsForObjects(
-				test,
-				data.wrapperArgs.handler,
-				data.handlerArgs.key,
-			)
 			data.want(test, got)
 		})
 	}
