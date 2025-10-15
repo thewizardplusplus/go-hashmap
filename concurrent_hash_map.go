@@ -10,7 +10,7 @@ import (
 // Each segment should take care of concurrent access safety itself.
 type ConcurrentHashMap struct {
 	config   ConcurrentConfig
-	segments []Storage
+	segments []Storage[Key, any]
 }
 
 // NewConcurrentHashMap ...
@@ -20,7 +20,7 @@ func NewConcurrentHashMap(options ...ConcurrentOption) ConcurrentHashMap {
 		option(&config)
 	}
 
-	var segments []Storage
+	var segments []Storage[Key, any]
 	for i := 0; i < config.concurrencyLevel; i++ {
 		segment := config.segmentFactory()
 		segments = append(segments, segment)
@@ -61,7 +61,7 @@ func (hashMap ConcurrentHashMap) Delete(key Key) {
 	hashMap.selectSegment(key).Delete(key)
 }
 
-func (hashMap ConcurrentHashMap) selectSegment(key Key) Storage {
+func (hashMap ConcurrentHashMap) selectSegment(key Key) Storage[Key, any] {
 	index := key.Hash() % len(hashMap.segments)
 	return hashMap.segments[index]
 }

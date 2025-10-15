@@ -5,7 +5,7 @@ import (
 )
 
 // StorageFactory ...
-type StorageFactory func() Storage
+type StorageFactory func() Storage[Key, any]
 
 // ConcurrentConfig ...
 type ConcurrentConfig struct {
@@ -18,8 +18,10 @@ type ConcurrentConfig struct {
 var (
 	defaultConcurrentConfig = ConcurrentConfig{
 		concurrencyLevel: 16,
-		segmentFactory:   func() Storage { return NewSynchronizedHashMap() },
-		permuter:         rand.Perm,
+		segmentFactory: func() Storage[Key, any] {
+			return NewSynchronizedHashMap[Key, any]()
+		},
+		permuter: rand.Perm,
 	}
 )
 

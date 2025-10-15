@@ -232,42 +232,44 @@ func BenchmarkSyncMap(benchmark *testing.B) {
 func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 	for _, data := range []struct {
 		name      string
-		prepare   func() *SynchronizedHashMap
-		benchmark func(hashMap *SynchronizedHashMap)
+		prepare   func() *SynchronizedHashMap[Key, any]
+		benchmark func(hashMap *SynchronizedHashMap[Key, any])
 	}{
 		{
 			name: "Get",
-			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+			prepare: func() *SynchronizedHashMap[Key, any] {
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap *SynchronizedHashMap) {
+			benchmark: func(hashMap *SynchronizedHashMap[Key, any]) {
 				hashMap.Get(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 		{
 			name: "All",
-			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+			prepare: func() *SynchronizedHashMap[Key, any] {
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap *SynchronizedHashMap) {
+			benchmark: func(hashMap *SynchronizedHashMap[Key, any]) {
 				for range hashMap.All() {
 				}
 			},
 		},
 		{
-			name:    "Set",
-			prepare: func() *SynchronizedHashMap { return NewSynchronizedHashMap() },
-			benchmark: func(hashMap *SynchronizedHashMap) {
+			name: "Set",
+			prepare: func() *SynchronizedHashMap[Key, any] {
+				return NewSynchronizedHashMap[Key, any]()
+			},
+			benchmark: func(hashMap *SynchronizedHashMap[Key, any]) {
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
@@ -275,15 +277,15 @@ func BenchmarkSynchronizedHashMap(benchmark *testing.B) {
 		},
 		{
 			name: "Delete",
-			prepare: func() *SynchronizedHashMap {
-				hashMap := NewSynchronizedHashMap()
+			prepare: func() *SynchronizedHashMap[Key, any] {
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap *SynchronizedHashMap) {
+			benchmark: func(hashMap *SynchronizedHashMap[Key, any]) {
 				hashMap.Delete(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},

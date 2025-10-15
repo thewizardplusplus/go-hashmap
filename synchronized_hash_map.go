@@ -9,27 +9,31 @@ import (
 //
 // It's safe for concurrent access because it uses a mutex lock to access
 // the inner map.
-type SynchronizedHashMap struct {
+type SynchronizedHashMap[KeyType Key, ValueType any] struct {
 	lock     sync.RWMutex
-	innerMap Storage
+	innerMap Storage[KeyType, ValueType]
 }
 
 // NewSynchronizedHashMap ...
-func NewSynchronizedHashMap(
-	options ...SynchronizedOption,
-) *SynchronizedHashMap {
+func NewSynchronizedHashMap[KeyType Key, ValueType any](
+	options ...SynchronizedOption[KeyType, ValueType],
+) *SynchronizedHashMap[KeyType, ValueType] {
 	// you can't move the default synchronized config into a global variable
 	// because the default inner map should be new every time
-	config := SynchronizedConfig{innerMap: NewHashMap[Key, any]()}
+	config := SynchronizedConfig[KeyType, ValueType]{
+		innerMap: NewHashMap[KeyType, ValueType](),
+	}
 	for _, option := range options {
 		option(&config)
 	}
 
-	return &SynchronizedHashMap{innerMap: config.innerMap}
+	return &SynchronizedHashMap[KeyType, ValueType]{innerMap: config.innerMap}
 }
 
 // Get ...
-func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
+func (hashMap *SynchronizedHashMap[KeyType, ValueType]) Get(
+	key KeyType,
+) (value ValueType, ok bool) {
 	hashMap.lock.RLock()
 	defer hashMap.lock.RUnlock()
 
@@ -42,8 +46,8 @@ func (hashMap *SynchronizedHashMap) Get(key Key) (value interface{}, ok bool) {
 //
 // A mutex lock is using only for iteration, not for handling (the handler
 // is called out of lock).
-func (hashMap *SynchronizedHashMap) All() iter.Seq2[Key, interface{}] {
-	return func(yield func(Key, interface{}) bool) {
+func (hashMap *SynchronizedHashMap[KeyType, ValueType]) All() iter.Seq2[KeyType, ValueType] { //nolint:lll
+	return func(yield func(KeyType, ValueType) bool) {
 		hashMap.lock.RLock()
 		defer hashMap.lock.RUnlock()
 
@@ -61,7 +65,10 @@ func (hashMap *SynchronizedHashMap) All() iter.Seq2[Key, interface{}] {
 }
 
 // Set ...
-func (hashMap *SynchronizedHashMap) Set(key Key, value interface{}) {
+func (hashMap *SynchronizedHashMap[KeyType, ValueType]) Set(
+	key KeyType,
+	value ValueType,
+) {
 	hashMap.lock.Lock()
 	defer hashMap.lock.Unlock()
 
@@ -69,7 +76,7 @@ func (hashMap *SynchronizedHashMap) Set(key Key, value interface{}) {
 }
 
 // Delete ...
-func (hashMap *SynchronizedHashMap) Delete(key Key) {
+func (hashMap *SynchronizedHashMap[KeyType, ValueType]) Delete(key KeyType) {
 	hashMap.lock.Lock()
 	defer hashMap.lock.Unlock()
 

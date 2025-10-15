@@ -32,10 +32,10 @@ func TestNewConcurrentHashMap(test *testing.T) {
 
 						return config
 					}(),
-					segments: func() []Storage {
-						var segments []Storage
+					segments: func() []Storage[Key, any] {
+						var segments []Storage[Key, any]
 						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
-							segments = append(segments, &SynchronizedHashMap{
+							segments = append(segments, &SynchronizedHashMap[Key, any]{
 								innerMap: &HashMap[Key, any]{
 									config: func() Config {
 										config := defaultConfig
@@ -71,10 +71,10 @@ func TestNewConcurrentHashMap(test *testing.T) {
 
 						return config
 					}(),
-					segments: func() []Storage {
-						var segments []Storage
+					segments: func() []Storage[Key, any] {
+						var segments []Storage[Key, any]
 						for i := 0; i < 23; i++ {
-							segments = append(segments, &SynchronizedHashMap{
+							segments = append(segments, &SynchronizedHashMap[Key, any]{
 								innerMap: &HashMap[Key, any]{
 									config: func() Config {
 										config := defaultConfig
@@ -98,7 +98,9 @@ func TestNewConcurrentHashMap(test *testing.T) {
 			args: args{
 				options: func(test *testing.T) []ConcurrentOption {
 					return []ConcurrentOption{
-						WithSegmentFactory(func() Storage { return NewMockStorage(test) }),
+						WithSegmentFactory(func() Storage[Key, any] {
+							return NewMockStorage[Key, any](test)
+						}),
 					}
 				},
 			},
@@ -111,10 +113,10 @@ func TestNewConcurrentHashMap(test *testing.T) {
 
 						return config
 					}(),
-					segments: func() []Storage {
-						var segments []Storage
+					segments: func() []Storage[Key, any] {
+						var segments []Storage[Key, any]
 						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
-							segments = append(segments, NewMockStorage(test))
+							segments = append(segments, NewMockStorage[Key, any](test))
 						}
 
 						return segments
@@ -128,7 +130,9 @@ func TestNewConcurrentHashMap(test *testing.T) {
 				options: func(test *testing.T) []ConcurrentOption {
 					return []ConcurrentOption{
 						WithConcurrencyLevel(23),
-						WithSegmentFactory(func() Storage { return NewMockStorage(test) }),
+						WithSegmentFactory(func() Storage[Key, any] {
+							return NewMockStorage[Key, any](test)
+						}),
 						WithConcurrentPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
 					}
 				},
@@ -143,10 +147,10 @@ func TestNewConcurrentHashMap(test *testing.T) {
 
 						return config
 					}(),
-					segments: func() []Storage {
-						var segments []Storage
+					segments: func() []Storage[Key, any] {
+						var segments []Storage[Key, any]
 						for i := 0; i < 23; i++ {
-							segments = append(segments, NewMockStorage(test))
+							segments = append(segments, NewMockStorage[Key, any](test))
 						}
 
 						return segments
@@ -159,7 +163,7 @@ func TestNewConcurrentHashMap(test *testing.T) {
 			got := NewConcurrentHashMap(data.args.options(test)...)
 
 			for _, segment := range got.segments {
-				if typedSegment, ok := segment.(*SynchronizedHashMap); ok {
+				if typedSegment, ok := segment.(*SynchronizedHashMap[Key, any]); ok {
 					if innerMap, ok := typedSegment.innerMap.(*HashMap[Key, any]); ok {
 						innerMap.config.permuter = nil
 					}
@@ -361,7 +365,8 @@ func TestConcurrentHashMap(test *testing.T) {
 			}
 
 			for index, segment := range hashMap.segments {
-				innerMap := segment.(*SynchronizedHashMap).innerMap.(*HashMap[Key, any])
+				innerMap :=
+					segment.(*SynchronizedHashMap[Key, any]).innerMap.(*HashMap[Key, any])
 				if _, ok := data.wantTouchedSegments[index]; ok {
 					assert.NotZero(test, innerMap.size)
 				} else {
@@ -481,13 +486,13 @@ func TestConcurrentHashMap_All(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			var segments []Storage
+			var segments []Storage[Key, any]
 			for _, buckets := range data.fields.buckets(test) {
 				innerMap := &HashMap[Key, any]{
 					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 					buckets: buckets,
 				}
-				segment := &SynchronizedHashMap{innerMap: innerMap}
+				segment := &SynchronizedHashMap[Key, any]{innerMap: innerMap}
 				segments = append(segments, segment)
 			}
 
@@ -582,13 +587,13 @@ func TestConcurrentHashMap_All_order(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			var segments []Storage
+			var segments []Storage[Key, any]
 			for _, buckets := range data.fields.buckets(test) {
 				innerMap := &HashMap[Key, any]{
 					config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 					buckets: buckets,
 				}
-				segment := &SynchronizedHashMap{innerMap: innerMap}
+				segment := &SynchronizedHashMap[Key, any]{innerMap: innerMap}
 				segments = append(segments, segment)
 			}
 

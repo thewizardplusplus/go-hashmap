@@ -1,19 +1,22 @@
 package hashmap
 
 // SynchronizedConfig ...
-type SynchronizedConfig struct {
-	innerMap Storage
+type SynchronizedConfig[KeyType Key, ValueType any] struct {
+	innerMap Storage[KeyType, ValueType]
 }
 
 // SynchronizedOption ...
-type SynchronizedOption func(options *SynchronizedConfig)
+type SynchronizedOption[KeyType Key, ValueType any] func(
+	options *SynchronizedConfig[KeyType, ValueType],
+)
 
 // WithInnerMap ...
 //
 // Default: an instance of the HashMap structure with default options.
-//
-func WithInnerMap(innerMap Storage) SynchronizedOption {
-	return func(options *SynchronizedConfig) {
+func WithInnerMap[KeyType Key, ValueType any](
+	innerMap Storage[KeyType, ValueType],
+) SynchronizedOption[KeyType, ValueType] {
+	return func(options *SynchronizedConfig[KeyType, ValueType]) {
 		options.innerMap = innerMap
 	}
 }

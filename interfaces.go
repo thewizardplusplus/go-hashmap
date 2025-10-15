@@ -11,9 +11,9 @@ type Key interface {
 }
 
 // Storage ...
-type Storage interface {
-	Get(key Key) (value interface{}, ok bool)
-	All() iter.Seq2[Key, interface{}]
-	Set(key Key, value interface{})
-	Delete(key Key)
+type Storage[KeyType Key, ValueType any] interface {
+	Get(key KeyType) (value ValueType, ok bool)
+	All() iter.Seq2[KeyType, ValueType]
+	Set(key KeyType, value ValueType)
+	Delete(key KeyType)
 }

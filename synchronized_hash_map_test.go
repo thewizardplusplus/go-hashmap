@@ -10,21 +10,23 @@ import (
 
 func TestNewSynchronizedHashMap(test *testing.T) {
 	type args struct {
-		options func(test *testing.T) []SynchronizedOption
+		options func(test *testing.T) []SynchronizedOption[Key, any]
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want func(test *testing.T) *SynchronizedHashMap
+		want func(test *testing.T) *SynchronizedHashMap[Key, any]
 	}{
 		{
 			name: "with the default config",
 			args: args{
-				options: func(test *testing.T) []SynchronizedOption { return nil },
+				options: func(test *testing.T) []SynchronizedOption[Key, any] {
+					return nil
+				},
 			},
-			want: func(test *testing.T) *SynchronizedHashMap {
-				return &SynchronizedHashMap{
+			want: func(test *testing.T) *SynchronizedHashMap[Key, any] {
+				return &SynchronizedHashMap[Key, any]{
 					innerMap: &HashMap[Key, any]{
 						config: func() Config {
 							config := defaultConfig
@@ -41,13 +43,15 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 		{
 			name: "with the set inner map",
 			args: args{
-				options: func(test *testing.T) []SynchronizedOption {
-					return []SynchronizedOption{WithInnerMap(NewMockStorage(test))}
+				options: func(test *testing.T) []SynchronizedOption[Key, any] {
+					return []SynchronizedOption[Key, any]{
+						WithInnerMap(NewMockStorage[Key, any](test)),
+					}
 				},
 			},
-			want: func(test *testing.T) *SynchronizedHashMap {
-				return &SynchronizedHashMap{
-					innerMap: NewMockStorage(test),
+			want: func(test *testing.T) *SynchronizedHashMap[Key, any] {
+				return &SynchronizedHashMap[Key, any]{
+					innerMap: NewMockStorage[Key, any](test),
 				}
 			},
 		},
@@ -66,15 +70,15 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 func TestSynchronizedHashMap(test *testing.T) {
 	for _, data := range []struct {
 		name      string
-		hashMap   func(test *testing.T) *SynchronizedHashMap
+		hashMap   func(test *testing.T) *SynchronizedHashMap[Key, any]
 		key       func(test *testing.T) Key
 		wantValue interface{}
 		wantOk    assert.BoolAssertionFunc
 	}{
 		{
 			name: "getting by a nonexistent key",
-			hashMap: func(test *testing.T) *SynchronizedHashMap {
-				return NewSynchronizedHashMap()
+			hashMap: func(test *testing.T) *SynchronizedHashMap[Key, any] {
+				return NewSynchronizedHashMap[Key, any]()
 			},
 			key: func(test *testing.T) Key {
 				key := NewMockKey(test)
@@ -87,13 +91,13 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by a nonexistent key",
-			hashMap: func(test *testing.T) *SynchronizedHashMap {
+			hashMap: func(test *testing.T) *SynchronizedHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				// it's called inside the HashMap.Get() method below
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				hashMap.Set(key, "five")
 
 				return hashMap
@@ -109,12 +113,12 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by an existing key",
-			hashMap: func(test *testing.T) *SynchronizedHashMap {
+			hashMap: func(test *testing.T) *SynchronizedHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				hashMap.Set(key, "five #1")
 				hashMap.Set(key, "five #2")
 
@@ -131,11 +135,11 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by a nonexistent key",
-			hashMap: func(test *testing.T) *SynchronizedHashMap {
+			hashMap: func(test *testing.T) *SynchronizedHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				hashMap.Delete(key)
 
 				return hashMap
@@ -151,12 +155,12 @@ func TestSynchronizedHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by an existing key",
-			hashMap: func(test *testing.T) *SynchronizedHashMap {
+			hashMap: func(test *testing.T) *SynchronizedHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewSynchronizedHashMap()
+				hashMap := NewSynchronizedHashMap[Key, any]()
 				hashMap.Set(key, "five")
 				hashMap.Delete(key)
 
@@ -248,7 +252,7 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 				buckets: data.fields.buckets(test),
 			}
-			hashMap := SynchronizedHashMap{innerMap: &innerMap}
+			hashMap := SynchronizedHashMap[Key, any]{innerMap: &innerMap}
 			for key, value := range hashMap.All() {
 				gotBuckets = append(gotBuckets, bucket[Key, any]{key, value})
 				// interrupt after a specified count of got buckets
@@ -271,7 +275,7 @@ func TestSynchronizedHashMap_All_order(test *testing.T) {
 			7: {key: NewMockKey(test), value: "seven"},
 		},
 	}
-	hashMap := SynchronizedHashMap{innerMap: &innerMap}
+	hashMap := SynchronizedHashMap[Key, any]{innerMap: &innerMap}
 
 	var gotBucketsOne []bucket[Key, any]
 	for key, value := range hashMap.All() {
