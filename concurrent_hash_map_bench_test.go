@@ -10,42 +10,44 @@ import (
 func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 	for _, data := range []struct {
 		name      string
-		prepare   func() ConcurrentHashMap
-		benchmark func(hashMap ConcurrentHashMap)
+		prepare   func() ConcurrentHashMap[Key, any]
+		benchmark func(hashMap ConcurrentHashMap[Key, any])
 	}{
 		{
 			name: "Get",
-			prepare: func() ConcurrentHashMap {
-				hashMap := NewConcurrentHashMap()
+			prepare: func() ConcurrentHashMap[Key, any] {
+				hashMap := NewConcurrentHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap ConcurrentHashMap) {
+			benchmark: func(hashMap ConcurrentHashMap[Key, any]) {
 				hashMap.Get(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},
 		{
 			name: "All",
-			prepare: func() ConcurrentHashMap {
-				hashMap := NewConcurrentHashMap()
+			prepare: func() ConcurrentHashMap[Key, any] {
+				hashMap := NewConcurrentHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap ConcurrentHashMap) {
+			benchmark: func(hashMap ConcurrentHashMap[Key, any]) {
 				for range hashMap.All() {
 				}
 			},
 		},
 		{
-			name:    "Set",
-			prepare: func() ConcurrentHashMap { return NewConcurrentHashMap() },
-			benchmark: func(hashMap ConcurrentHashMap) {
+			name: "Set",
+			prepare: func() ConcurrentHashMap[Key, any] {
+				return NewConcurrentHashMap[Key, any]()
+			},
+			benchmark: func(hashMap ConcurrentHashMap[Key, any]) {
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
@@ -53,15 +55,15 @@ func BenchmarkConcurrentHashMap(benchmark *testing.B) {
 		},
 		{
 			name: "Delete",
-			prepare: func() ConcurrentHashMap {
-				hashMap := NewConcurrentHashMap()
+			prepare: func() ConcurrentHashMap[Key, any] {
+				hashMap := NewConcurrentHashMap[Key, any]()
 				for i := 0; i < sizeForSyncBench; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(hashMap ConcurrentHashMap) {
+			benchmark: func(hashMap ConcurrentHashMap[Key, any]) {
 				hashMap.Delete(IntKey(rand.IntN(sizeForSyncBench)))
 			},
 		},

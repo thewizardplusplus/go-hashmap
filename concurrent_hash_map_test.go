@@ -10,31 +10,31 @@ import (
 
 func TestNewConcurrentHashMap(test *testing.T) {
 	type args struct {
-		options func(test *testing.T) []ConcurrentOption
+		options func(test *testing.T) []ConcurrentOption[Key, any]
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want func(test *testing.T) ConcurrentHashMap
+		want func(test *testing.T) ConcurrentHashMap[Key, any]
 	}{
 		{
 			name: "with the default config",
 			args: args{
-				options: func(test *testing.T) []ConcurrentOption { return nil },
+				options: func(test *testing.T) []ConcurrentOption[Key, any] { return nil },
 			},
-			want: func(test *testing.T) ConcurrentHashMap {
-				return ConcurrentHashMap{
-					config: func() ConcurrentConfig {
-						config := defaultConcurrentConfig
-						config.segmentFactory = nil
-						config.permuter = nil
-
-						return config
+			want: func(test *testing.T) ConcurrentHashMap[Key, any] {
+				return ConcurrentHashMap[Key, any]{
+					config: func() ConcurrentConfig[Key, any] {
+						return ConcurrentConfig[Key, any]{
+							concurrencyLevel: defaultConcurrencyLevel,
+							segmentFactory:   nil,
+							permuter:         nil,
+						}
 					}(),
 					segments: func() []Storage[Key, any] {
 						var segments []Storage[Key, any]
-						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+						for i := 0; i < defaultConcurrencyLevel; i++ {
 							segments = append(segments, &SynchronizedHashMap[Key, any]{
 								innerMap: &HashMap[Key, any]{
 									config: func() Config {
@@ -57,19 +57,18 @@ func TestNewConcurrentHashMap(test *testing.T) {
 		{
 			name: "with the set concurrency level",
 			args: args{
-				options: func(test *testing.T) []ConcurrentOption {
-					return []ConcurrentOption{WithConcurrencyLevel(23)}
+				options: func(test *testing.T) []ConcurrentOption[Key, any] {
+					return []ConcurrentOption[Key, any]{WithConcurrencyLevel[Key, any](23)}
 				},
 			},
-			want: func(test *testing.T) ConcurrentHashMap {
-				return ConcurrentHashMap{
-					config: func() ConcurrentConfig {
-						config := defaultConcurrentConfig
-						config.concurrencyLevel = 23
-						config.segmentFactory = nil
-						config.permuter = nil
-
-						return config
+			want: func(test *testing.T) ConcurrentHashMap[Key, any] {
+				return ConcurrentHashMap[Key, any]{
+					config: func() ConcurrentConfig[Key, any] {
+						return ConcurrentConfig[Key, any]{
+							concurrencyLevel: 23,
+							segmentFactory:   nil,
+							permuter:         nil,
+						}
 					}(),
 					segments: func() []Storage[Key, any] {
 						var segments []Storage[Key, any]
@@ -96,26 +95,26 @@ func TestNewConcurrentHashMap(test *testing.T) {
 		{
 			name: "with the set segment factory",
 			args: args{
-				options: func(test *testing.T) []ConcurrentOption {
-					return []ConcurrentOption{
+				options: func(test *testing.T) []ConcurrentOption[Key, any] {
+					return []ConcurrentOption[Key, any]{
 						WithSegmentFactory(func() Storage[Key, any] {
 							return NewMockStorage[Key, any](test)
 						}),
 					}
 				},
 			},
-			want: func(test *testing.T) ConcurrentHashMap {
-				return ConcurrentHashMap{
-					config: func() ConcurrentConfig {
-						config := defaultConcurrentConfig
-						config.segmentFactory = nil
-						config.permuter = nil
-
-						return config
+			want: func(test *testing.T) ConcurrentHashMap[Key, any] {
+				return ConcurrentHashMap[Key, any]{
+					config: func() ConcurrentConfig[Key, any] {
+						return ConcurrentConfig[Key, any]{
+							concurrencyLevel: defaultConcurrencyLevel,
+							segmentFactory:   nil,
+							permuter:         nil,
+						}
 					}(),
 					segments: func() []Storage[Key, any] {
 						var segments []Storage[Key, any]
-						for i := 0; i < defaultConcurrentConfig.concurrencyLevel; i++ {
+						for i := 0; i < defaultConcurrencyLevel; i++ {
 							segments = append(segments, NewMockStorage[Key, any](test))
 						}
 
@@ -127,25 +126,24 @@ func TestNewConcurrentHashMap(test *testing.T) {
 		{
 			name: "with the set config",
 			args: args{
-				options: func(test *testing.T) []ConcurrentOption {
-					return []ConcurrentOption{
-						WithConcurrencyLevel(23),
+				options: func(test *testing.T) []ConcurrentOption[Key, any] {
+					return []ConcurrentOption[Key, any]{
+						WithConcurrencyLevel[Key, any](23),
 						WithSegmentFactory(func() Storage[Key, any] {
 							return NewMockStorage[Key, any](test)
 						}),
-						WithConcurrentPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
+						WithConcurrentPermuter[Key, any](rand.New(rand.NewPCG(0, 0)).Perm),
 					}
 				},
 			},
-			want: func(test *testing.T) ConcurrentHashMap {
-				return ConcurrentHashMap{
-					config: func() ConcurrentConfig {
-						config := defaultConcurrentConfig
-						config.concurrencyLevel = 23
-						config.segmentFactory = nil
-						config.permuter = nil
-
-						return config
+			want: func(test *testing.T) ConcurrentHashMap[Key, any] {
+				return ConcurrentHashMap[Key, any]{
+					config: func() ConcurrentConfig[Key, any] {
+						return ConcurrentConfig[Key, any]{
+							concurrencyLevel: 23,
+							segmentFactory:   nil,
+							permuter:         nil,
+						}
 					}(),
 					segments: func() []Storage[Key, any] {
 						var segments []Storage[Key, any]
@@ -189,15 +187,15 @@ func TestConcurrentHashMap(test *testing.T) {
 
 	for _, data := range []struct {
 		name                string
-		hashMap             func(test *testing.T) ConcurrentHashMap
+		hashMap             func(test *testing.T) ConcurrentHashMap[Key, any]
 		keys                func(test *testing.T) []Key
 		wantTouchedSegments map[int]struct{}
 		wantResults         []result
 	}{
 		{
 			name: "getting by a nonexistent key",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
-				return NewConcurrentHashMap()
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
+				return NewConcurrentHashMap[Key, any]()
 			},
 			keys: func(test *testing.T) []Key {
 				key := NewMockKey(test)
@@ -210,13 +208,13 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by a nonexistent key",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				// it's called inside the HashMap.Get() method below
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Set(key, "five")
 
 				return hashMap
@@ -232,12 +230,12 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by an existing key",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Set(key, "five #1")
 				hashMap.Set(key, "five #2")
 
@@ -254,7 +252,7 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "setting by keys touched different segments",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				fiveKey := NewMockKey(test)
 				fiveKey.EXPECT().Hash().Return(5)
 				fiveKey.EXPECT().Equals(mock.Anything).Return(true)
@@ -263,7 +261,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				sixKey.EXPECT().Hash().Return(6)
 				sixKey.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Set(fiveKey, "five")
 				hashMap.Set(sixKey, "six")
 
@@ -283,11 +281,11 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by a nonexistent key",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Delete(key)
 
 				return hashMap
@@ -303,12 +301,12 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by an existing key",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				key := NewMockKey(test)
 				key.EXPECT().Hash().Return(5)
 				key.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Set(key, "five")
 				hashMap.Delete(key)
 
@@ -325,7 +323,7 @@ func TestConcurrentHashMap(test *testing.T) {
 		},
 		{
 			name: "deleting by keys touched different segments",
-			hashMap: func(test *testing.T) ConcurrentHashMap {
+			hashMap: func(test *testing.T) ConcurrentHashMap[Key, any] {
 				fiveKey := NewMockKey(test)
 				fiveKey.EXPECT().Hash().Return(5)
 				fiveKey.EXPECT().Equals(mock.Anything).Return(true)
@@ -334,7 +332,7 @@ func TestConcurrentHashMap(test *testing.T) {
 				sixKey.EXPECT().Hash().Return(6)
 				sixKey.EXPECT().Equals(mock.Anything).Return(true)
 
-				hashMap := NewConcurrentHashMap()
+				hashMap := NewConcurrentHashMap[Key, any]()
 				hashMap.Set(fiveKey, "five")
 				hashMap.Set(sixKey, "six")
 				hashMap.Delete(fiveKey)
@@ -497,8 +495,10 @@ func TestConcurrentHashMap_All(test *testing.T) {
 			}
 
 			var gotBuckets []bucket[Key, any]
-			hashMap := ConcurrentHashMap{
-				config:   ConcurrentConfig{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+			hashMap := ConcurrentHashMap[Key, any]{
+				config: ConcurrentConfig[Key, any]{
+					permuter: rand.New(rand.NewPCG(0, 0)).Perm,
+				},
 				segments: segments,
 			}
 			for key, value := range hashMap.All() {
@@ -597,8 +597,10 @@ func TestConcurrentHashMap_All_order(test *testing.T) {
 				segments = append(segments, segment)
 			}
 
-			hashMap := ConcurrentHashMap{
-				config:   ConcurrentConfig{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
+			hashMap := ConcurrentHashMap[Key, any]{
+				config: ConcurrentConfig[Key, any]{
+					permuter: rand.New(rand.NewPCG(0, 0)).Perm,
+				},
 				segments: segments,
 			}
 

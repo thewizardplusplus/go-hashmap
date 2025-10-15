@@ -1,38 +1,31 @@
 package hashmap
 
-import (
-	"math/rand/v2"
+const (
+	defaultConcurrencyLevel = 16
 )
 
 // StorageFactory ...
-type StorageFactory func() Storage[Key, any]
+type StorageFactory[KeyType Key, ValueType any] func() Storage[KeyType, ValueType] //nolint:lll
 
 // ConcurrentConfig ...
-type ConcurrentConfig struct {
+type ConcurrentConfig[KeyType Key, ValueType any] struct {
 	concurrencyLevel int
-	segmentFactory   StorageFactory
+	segmentFactory   StorageFactory[KeyType, ValueType]
 	permuter         Permuter
 }
 
-// nolint: gochecknoglobals
-var (
-	defaultConcurrentConfig = ConcurrentConfig{
-		concurrencyLevel: 16,
-		segmentFactory: func() Storage[Key, any] {
-			return NewSynchronizedHashMap[Key, any]()
-		},
-		permuter: rand.Perm,
-	}
-)
-
 // ConcurrentOption ...
-type ConcurrentOption func(options *ConcurrentConfig)
+type ConcurrentOption[KeyType Key, ValueType any] func(
+	options *ConcurrentConfig[KeyType, ValueType],
+)
 
 // WithConcurrencyLevel ...
 //
 // Default: 16.
-func WithConcurrencyLevel(concurrencyLevel int) ConcurrentOption {
-	return func(options *ConcurrentConfig) {
+func WithConcurrencyLevel[KeyType Key, ValueType any](
+	concurrencyLevel int,
+) ConcurrentOption[KeyType, ValueType] {
+	return func(options *ConcurrentConfig[KeyType, ValueType]) {
 		options.concurrencyLevel = concurrencyLevel
 	}
 }
@@ -41,8 +34,10 @@ func WithConcurrencyLevel(concurrencyLevel int) ConcurrentOption {
 //
 // Default: a factory that produces an instance
 // of the SynchronizedHashMap structure with default options.
-func WithSegmentFactory(segmentFactory StorageFactory) ConcurrentOption {
-	return func(options *ConcurrentConfig) {
+func WithSegmentFactory[KeyType Key, ValueType any](
+	segmentFactory StorageFactory[KeyType, ValueType],
+) ConcurrentOption[KeyType, ValueType] {
+	return func(options *ConcurrentConfig[KeyType, ValueType]) {
 		options.segmentFactory = segmentFactory
 	}
 }
@@ -50,8 +45,10 @@ func WithSegmentFactory(segmentFactory StorageFactory) ConcurrentOption {
 // WithConcurrentPermuter ...
 //
 // Default: math/rand/v2.Perm.
-func WithConcurrentPermuter(permuter Permuter) ConcurrentOption {
-	return func(options *ConcurrentConfig) {
+func WithConcurrentPermuter[KeyType Key, ValueType any](
+	permuter Permuter,
+) ConcurrentOption[KeyType, ValueType] {
+	return func(options *ConcurrentConfig[KeyType, ValueType]) {
 		options.permuter = permuter
 	}
 }
