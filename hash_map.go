@@ -4,35 +4,43 @@ import (
 	"iter"
 )
 
-type bucket struct {
-	key   Key
-	value interface{}
+type bucket[KeyType Key, ValueType any] struct {
+	key   KeyType
+	value ValueType
 }
 
 // HashMap ...
 //
 // It's not safe for concurrent access.
-type HashMap struct {
+type HashMap[KeyType Key, ValueType any] struct {
 	config  Config
-	buckets []*bucket
+	buckets []*bucket[KeyType, ValueType]
 	size    int
 }
 
 // NewHashMap ...
-func NewHashMap(options ...Option) *HashMap {
+func NewHashMap[KeyType Key, ValueType any](
+	options ...Option,
+) *HashMap[KeyType, ValueType] {
 	config := defaultConfig
 	for _, option := range options {
 		option(&config)
 	}
 
-	return newHashMapWithCapacity(config, config.initialCapacity)
+	return newHashMapWithCapacity[KeyType, ValueType](
+		config,
+		config.initialCapacity,
+	)
 }
 
 // Get ...
-func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
+func (hashMap HashMap[KeyType, ValueType]) Get(
+	key KeyType,
+) (value ValueType, ok bool) {
 	index, ok := hashMap.find(key)
 	if !ok {
-		return nil, false
+		var zeroValue ValueType
+		return zeroValue, false
 	}
 
 	return hashMap.buckets[index].value, true
@@ -41,8 +49,8 @@ func (hashMap HashMap) Get(key Key) (value interface{}, ok bool) {
 // All ...
 //
 // It randomizes of iteration order.
-func (hashMap HashMap) All() iter.Seq2[Key, interface{}] {
-	return func(yield func(Key, interface{}) bool) {
+func (hashMap HashMap[KeyType, ValueType]) All() iter.Seq2[KeyType, ValueType] {
+	return func(yield func(KeyType, ValueType) bool) {
 		for _, index := range hashMap.config.permuter(len(hashMap.buckets)) {
 			bucket := hashMap.buckets[index]
 			if bucket == nil {
@@ -57,14 +65,14 @@ func (hashMap HashMap) All() iter.Seq2[Key, interface{}] {
 }
 
 // Set ...
-func (hashMap *HashMap) Set(key Key, value interface{}) {
+func (hashMap *HashMap[KeyType, ValueType]) Set(key KeyType, value ValueType) {
 	index, ok := hashMap.find(key)
 	if ok {
 		hashMap.buckets[index].value = value
 		return
 	}
 
-	hashMap.buckets[index] = &bucket{key, value}
+	hashMap.buckets[index] = &bucket[KeyType, ValueType]{key, value}
 	hashMap.size++
 
 	loadFactor := float64(hashMap.size) / float64(len(hashMap.buckets))
@@ -74,7 +82,7 @@ func (hashMap *HashMap) Set(key Key, value interface{}) {
 }
 
 // Delete ...
-func (hashMap *HashMap) Delete(key Key) {
+func (hashMap *HashMap[KeyType, ValueType]) Delete(key KeyType) {
 	index, ok := hashMap.find(key)
 	if !ok {
 		return
@@ -84,7 +92,9 @@ func (hashMap *HashMap) Delete(key Key) {
 	hashMap.size--
 }
 
-func (hashMap HashMap) find(key Key) (index int, ok bool) {
+func (hashMap HashMap[KeyType, ValueType]) find(
+	key KeyType,
+) (index int, ok bool) {
 	for index := key.Hash(); ; index++ {
 		modIndex := index % len(hashMap.buckets)
 		bucket := hashMap.buckets[modIndex]
@@ -97,9 +107,12 @@ func (hashMap HashMap) find(key Key) (index int, ok bool) {
 	}
 }
 
-func (hashMap *HashMap) rehash() {
+func (hashMap *HashMap[KeyType, ValueType]) rehash() {
 	newCapacity := int(float64(len(hashMap.buckets)) * hashMap.config.growFactor)
-	newHashMap := newHashMapWithCapacity(hashMap.config, newCapacity)
+	newHashMap := newHashMapWithCapacity[KeyType, ValueType](
+		hashMap.config,
+		newCapacity,
+	)
 	for key, value := range hashMap.All() {
 		newHashMap.Set(key, value)
 	}
@@ -107,7 +120,10 @@ func (hashMap *HashMap) rehash() {
 	*hashMap = *newHashMap
 }
 
-func newHashMapWithCapacity(config Config, capacity int) *HashMap {
-	buckets := make([]*bucket, capacity)
-	return &HashMap{config: config, buckets: buckets, size: 0}
+func newHashMapWithCapacity[KeyType Key, ValueType any](
+	config Config,
+	capacity int,
+) *HashMap[KeyType, ValueType] {
+	buckets := make([]*bucket[KeyType, ValueType], capacity)
+	return &HashMap[KeyType, ValueType]{config: config, buckets: buckets, size: 0}
 }

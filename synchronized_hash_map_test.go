@@ -25,14 +25,14 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 			},
 			want: func(test *testing.T) *SynchronizedHashMap {
 				return &SynchronizedHashMap{
-					innerMap: &HashMap{
+					innerMap: &HashMap[Key, any]{
 						config: func() Config {
 							config := defaultConfig
 							config.permuter = nil
 
 							return config
 						}(),
-						buckets: make([]*bucket, defaultConfig.initialCapacity),
+						buckets: make([]*bucket[Key, any], defaultConfig.initialCapacity),
 						size:    0,
 					},
 				}
@@ -54,7 +54,7 @@ func TestNewSynchronizedHashMap(test *testing.T) {
 	} {
 		test.Run(data.name, func(test *testing.T) {
 			got := NewSynchronizedHashMap(data.args.options(test)...)
-			if innerMap, ok := got.innerMap.(*HashMap); ok {
+			if innerMap, ok := got.innerMap.(*HashMap[Key, any]); ok {
 				innerMap.config.permuter = nil
 			}
 
@@ -183,30 +183,30 @@ func TestSynchronizedHashMap(test *testing.T) {
 
 func TestSynchronizedHashMap_All(test *testing.T) {
 	type fields struct {
-		buckets func(test *testing.T) []*bucket
+		buckets func(test *testing.T) []*bucket[Key, any]
 	}
 
 	for _, data := range []struct {
 		name             string
 		fields           fields
 		interruptOnCount int
-		wantBuckets      func(test *testing.T) []bucket
+		wantBuckets      func(test *testing.T) []bucket[Key, any]
 	}{
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return make([]*bucket, defaultConfig.initialCapacity)
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return make([]*bucket[Key, any], defaultConfig.initialCapacity)
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets:      func(test *testing.T) []bucket { return nil },
+			wantBuckets:      func(test *testing.T) []bucket[Key, any] { return nil },
 		},
 		{
 			name: "with few buckets and without an interrupt",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return []*bucket{
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return []*bucket[Key, any]{
 						5: {key: NewMockKey(test), value: "five"},
 						6: {key: NewMockKey(test), value: "six"},
 						7: {key: NewMockKey(test), value: "seven"},
@@ -214,8 +214,8 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets: func(test *testing.T) []bucket {
-				return []bucket{
+			wantBuckets: func(test *testing.T) []bucket[Key, any] {
+				return []bucket[Key, any]{
 					{key: NewMockKey(test), value: "six"},
 					{key: NewMockKey(test), value: "five"},
 					{key: NewMockKey(test), value: "seven"},
@@ -225,8 +225,8 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 		{
 			name: "with few buckets and with an interrupt",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return []*bucket{
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return []*bucket[Key, any]{
 						5: {key: NewMockKey(test), value: "five"},
 						6: {key: NewMockKey(test), value: "six"},
 						7: {key: NewMockKey(test), value: "seven"},
@@ -234,8 +234,8 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 				},
 			},
 			interruptOnCount: 2,
-			wantBuckets: func(test *testing.T) []bucket {
-				return []bucket{
+			wantBuckets: func(test *testing.T) []bucket[Key, any] {
+				return []bucket[Key, any]{
 					{key: NewMockKey(test), value: "six"},
 					{key: NewMockKey(test), value: "five"},
 				}
@@ -243,14 +243,14 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			var gotBuckets []bucket
-			innerMap := HashMap{
+			var gotBuckets []bucket[Key, any]
+			innerMap := HashMap[Key, any]{
 				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 				buckets: data.fields.buckets(test),
 			}
 			hashMap := SynchronizedHashMap{innerMap: &innerMap}
 			for key, value := range hashMap.All() {
-				gotBuckets = append(gotBuckets, bucket{key, value})
+				gotBuckets = append(gotBuckets, bucket[Key, any]{key, value})
 				// interrupt after a specified count of got buckets
 				if len(gotBuckets) >= data.interruptOnCount {
 					break
@@ -263,9 +263,9 @@ func TestSynchronizedHashMap_All(test *testing.T) {
 }
 
 func TestSynchronizedHashMap_All_order(test *testing.T) {
-	innerMap := HashMap{
+	innerMap := HashMap[Key, any]{
 		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
-		buckets: []*bucket{
+		buckets: []*bucket[Key, any]{
 			5: {key: NewMockKey(test), value: "five"},
 			6: {key: NewMockKey(test), value: "six"},
 			7: {key: NewMockKey(test), value: "seven"},
@@ -273,24 +273,24 @@ func TestSynchronizedHashMap_All_order(test *testing.T) {
 	}
 	hashMap := SynchronizedHashMap{innerMap: &innerMap}
 
-	var gotBucketsOne []bucket
+	var gotBucketsOne []bucket[Key, any]
 	for key, value := range hashMap.All() {
-		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
+		gotBucketsOne = append(gotBucketsOne, bucket[Key, any]{key, value})
 	}
 
-	var gotBucketsTwo []bucket
+	var gotBucketsTwo []bucket[Key, any]
 	for key, value := range hashMap.All() {
-		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
+		gotBucketsTwo = append(gotBucketsTwo, bucket[Key, any]{key, value})
 	}
 
-	wantBucketsOne := []bucket{
+	wantBucketsOne := []bucket[Key, any]{
 		{key: NewMockKey(test), value: "six"},
 		{key: NewMockKey(test), value: "five"},
 		{key: NewMockKey(test), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
 
-	wantBucketsTwo := []bucket{
+	wantBucketsTwo := []bucket[Key, any]{
 		{key: NewMockKey(test), value: "seven"},
 		{key: NewMockKey(test), value: "six"},
 		{key: NewMockKey(test), value: "five"},

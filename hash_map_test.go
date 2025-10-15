@@ -16,21 +16,21 @@ func TestNewHashMap(test *testing.T) {
 	for _, data := range []struct {
 		name string
 		args args
-		want *HashMap
+		want *HashMap[Key, any]
 	}{
 		{
 			name: "with the default config",
 			args: args{
 				options: nil,
 			},
-			want: &HashMap{
+			want: &HashMap[Key, any]{
 				config: func() Config {
 					config := defaultConfig
 					config.permuter = nil
 
 					return config
 				}(),
-				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				buckets: make([]*bucket[Key, any], defaultConfig.initialCapacity),
 				size:    0,
 			},
 		},
@@ -39,7 +39,7 @@ func TestNewHashMap(test *testing.T) {
 			args: args{
 				options: []Option{WithInitialCapacity(23)},
 			},
-			want: &HashMap{
+			want: &HashMap[Key, any]{
 				config: func() Config {
 					config := defaultConfig
 					config.initialCapacity = 23
@@ -47,7 +47,7 @@ func TestNewHashMap(test *testing.T) {
 
 					return config
 				}(),
-				buckets: make([]*bucket, 23),
+				buckets: make([]*bucket[Key, any], 23),
 				size:    0,
 			},
 		},
@@ -56,7 +56,7 @@ func TestNewHashMap(test *testing.T) {
 			args: args{
 				options: []Option{WithMaxLoadFactor(23)},
 			},
-			want: &HashMap{
+			want: &HashMap[Key, any]{
 				config: func() Config {
 					config := defaultConfig
 					config.maxLoadFactor = 23
@@ -64,7 +64,7 @@ func TestNewHashMap(test *testing.T) {
 
 					return config
 				}(),
-				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				buckets: make([]*bucket[Key, any], defaultConfig.initialCapacity),
 				size:    0,
 			},
 		},
@@ -73,7 +73,7 @@ func TestNewHashMap(test *testing.T) {
 			args: args{
 				options: []Option{WithGrowFactor(23)},
 			},
-			want: &HashMap{
+			want: &HashMap[Key, any]{
 				config: func() Config {
 					config := defaultConfig
 					config.growFactor = 23
@@ -81,7 +81,7 @@ func TestNewHashMap(test *testing.T) {
 
 					return config
 				}(),
-				buckets: make([]*bucket, defaultConfig.initialCapacity),
+				buckets: make([]*bucket[Key, any], defaultConfig.initialCapacity),
 				size:    0,
 			},
 		},
@@ -95,20 +95,20 @@ func TestNewHashMap(test *testing.T) {
 					WithPermuter(rand.New(rand.NewPCG(0, 0)).Perm),
 				},
 			},
-			want: &HashMap{
+			want: &HashMap[Key, any]{
 				config: Config{
 					initialCapacity: 12,
 					maxLoadFactor:   23,
 					growFactor:      42,
 					permuter:        nil,
 				},
-				buckets: make([]*bucket, 12),
+				buckets: make([]*bucket[Key, any], 12),
 				size:    0,
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			got := NewHashMap(data.args.options...)
+			got := NewHashMap[Key, any](data.args.options...)
 
 			assert.NotNil(test, got.config.permuter)
 			got.config.permuter = nil
@@ -120,7 +120,7 @@ func TestNewHashMap(test *testing.T) {
 
 func TestHashMap_Get(test *testing.T) {
 	type fields struct {
-		buckets func(test *testing.T) []*bucket
+		buckets func(test *testing.T) []*bucket[Key, any]
 	}
 	type args struct {
 		key func(test *testing.T) Key
@@ -136,8 +136,8 @@ func TestHashMap_Get(test *testing.T) {
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return make([]*bucket, defaultConfig.initialCapacity)
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return make([]*bucket[Key, any], defaultConfig.initialCapacity)
 				},
 			},
 			args: args{
@@ -154,14 +154,14 @@ func TestHashMap_Get(test *testing.T) {
 		{
 			name: "with few buckets and a match at the start",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: NewMockKey(test), value: "six"}
-					buckets[7] = &bucket{key: NewMockKey(test), value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: NewMockKey(test), value: "six"}
+					buckets[7] = &bucket[Key, any]{key: NewMockKey(test), value: "seven"}
 
 					return buckets
 				},
@@ -180,7 +180,7 @@ func TestHashMap_Get(test *testing.T) {
 		{
 			name: "with few buckets and a match at the end",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -190,10 +190,10 @@ func TestHashMap_Get(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -212,7 +212,7 @@ func TestHashMap_Get(test *testing.T) {
 		{
 			name: "with few buckets and no match",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -222,10 +222,10 @@ func TestHashMap_Get(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(false)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -243,7 +243,7 @@ func TestHashMap_Get(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			hashMap := HashMap{buckets: data.fields.buckets(test)}
+			hashMap := HashMap[Key, any]{buckets: data.fields.buckets(test)}
 			gotValue, gotOk := hashMap.Get(data.args.key(test))
 
 			assert.Equal(test, data.wantValue, gotValue)
@@ -254,30 +254,30 @@ func TestHashMap_Get(test *testing.T) {
 
 func TestHashMap_All(test *testing.T) {
 	type fields struct {
-		buckets func(test *testing.T) []*bucket
+		buckets func(test *testing.T) []*bucket[Key, any]
 	}
 
 	for _, data := range []struct {
 		name             string
 		fields           fields
 		interruptOnCount int
-		wantBuckets      func(test *testing.T) []bucket
+		wantBuckets      func(test *testing.T) []bucket[Key, any]
 	}{
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return make([]*bucket, defaultConfig.initialCapacity)
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return make([]*bucket[Key, any], defaultConfig.initialCapacity)
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets:      func(test *testing.T) []bucket { return nil },
+			wantBuckets:      func(test *testing.T) []bucket[Key, any] { return nil },
 		},
 		{
 			name: "with few buckets and without an interrupt",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return []*bucket{
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return []*bucket[Key, any]{
 						5: {key: NewMockKey(test), value: "five"},
 						6: {key: NewMockKey(test), value: "six"},
 						7: {key: NewMockKey(test), value: "seven"},
@@ -285,8 +285,8 @@ func TestHashMap_All(test *testing.T) {
 				},
 			},
 			interruptOnCount: 10,
-			wantBuckets: func(test *testing.T) []bucket {
-				return []bucket{
+			wantBuckets: func(test *testing.T) []bucket[Key, any] {
+				return []bucket[Key, any]{
 					{key: NewMockKey(test), value: "six"},
 					{key: NewMockKey(test), value: "five"},
 					{key: NewMockKey(test), value: "seven"},
@@ -296,8 +296,8 @@ func TestHashMap_All(test *testing.T) {
 		{
 			name: "with few buckets and with an interrupt",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return []*bucket{
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return []*bucket[Key, any]{
 						5: {key: NewMockKey(test), value: "five"},
 						6: {key: NewMockKey(test), value: "six"},
 						7: {key: NewMockKey(test), value: "seven"},
@@ -305,8 +305,8 @@ func TestHashMap_All(test *testing.T) {
 				},
 			},
 			interruptOnCount: 2,
-			wantBuckets: func(test *testing.T) []bucket {
-				return []bucket{
+			wantBuckets: func(test *testing.T) []bucket[Key, any] {
+				return []bucket[Key, any]{
 					{key: NewMockKey(test), value: "six"},
 					{key: NewMockKey(test), value: "five"},
 				}
@@ -314,13 +314,13 @@ func TestHashMap_All(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			var gotBuckets []bucket
-			hashMap := HashMap{
+			var gotBuckets []bucket[Key, any]
+			hashMap := HashMap[Key, any]{
 				config:  Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
 				buckets: data.fields.buckets(test),
 			}
 			for key, value := range hashMap.All() {
-				gotBuckets = append(gotBuckets, bucket{key, value})
+				gotBuckets = append(gotBuckets, bucket[Key, any]{key, value})
 				// interrupt after a specified count of got buckets
 				if len(gotBuckets) >= data.interruptOnCount {
 					break
@@ -333,33 +333,33 @@ func TestHashMap_All(test *testing.T) {
 }
 
 func TestHashMap_All_order(test *testing.T) {
-	hashMap := HashMap{
+	hashMap := HashMap[Key, any]{
 		config: Config{permuter: rand.New(rand.NewPCG(0, 0)).Perm},
-		buckets: []*bucket{
+		buckets: []*bucket[Key, any]{
 			5: {key: NewMockKey(test), value: "five"},
 			6: {key: NewMockKey(test), value: "six"},
 			7: {key: NewMockKey(test), value: "seven"},
 		},
 	}
 
-	var gotBucketsOne []bucket
+	var gotBucketsOne []bucket[Key, any]
 	for key, value := range hashMap.All() {
-		gotBucketsOne = append(gotBucketsOne, bucket{key, value})
+		gotBucketsOne = append(gotBucketsOne, bucket[Key, any]{key, value})
 	}
 
-	var gotBucketsTwo []bucket
+	var gotBucketsTwo []bucket[Key, any]
 	for key, value := range hashMap.All() {
-		gotBucketsTwo = append(gotBucketsTwo, bucket{key, value})
+		gotBucketsTwo = append(gotBucketsTwo, bucket[Key, any]{key, value})
 	}
 
-	wantBucketsOne := []bucket{
+	wantBucketsOne := []bucket[Key, any]{
 		{key: NewMockKey(test), value: "six"},
 		{key: NewMockKey(test), value: "five"},
 		{key: NewMockKey(test), value: "seven"},
 	}
 	assert.Equal(test, wantBucketsOne, gotBucketsOne)
 
-	wantBucketsTwo := []bucket{
+	wantBucketsTwo := []bucket[Key, any]{
 		{key: NewMockKey(test), value: "seven"},
 		{key: NewMockKey(test), value: "six"},
 		{key: NewMockKey(test), value: "five"},
@@ -370,7 +370,7 @@ func TestHashMap_All_order(test *testing.T) {
 func TestHashMap_Set(test *testing.T) {
 	type fields struct {
 		config  Config
-		buckets func(test *testing.T) []*bucket
+		buckets func(test *testing.T) []*bucket[Key, any]
 		size    int
 	}
 	type args struct {
@@ -393,8 +393,8 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
-					return make([]*bucket, defaultConfig.initialCapacity)
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return make([]*bucket[Key, any], defaultConfig.initialCapacity)
 				},
 				size: 0,
 			},
@@ -420,14 +420,14 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: NewMockKey(test), value: "six"}
-					buckets[7] = &bucket{key: NewMockKey(test), value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: NewMockKey(test), value: "six"}
+					buckets[7] = &bucket[Key, any]{key: NewMockKey(test), value: "seven"}
 
 					return buckets
 				},
@@ -453,7 +453,7 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -463,10 +463,10 @@ func TestHashMap_Set(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -492,7 +492,7 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -502,10 +502,10 @@ func TestHashMap_Set(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(false)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -533,15 +533,15 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					threeKey := NewMockKey(test)
 					threeKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, 5)
-					buckets[0] = &bucket{key: NewMockKey(test), value: "zero"}
-					buckets[1] = &bucket{key: NewMockKey(test), value: "one"}
-					buckets[2] = &bucket{key: NewMockKey(test), value: "two"}
-					buckets[3] = &bucket{key: threeKey, value: "three"}
+					buckets := make([]*bucket[Key, any], 5)
+					buckets[0] = &bucket[Key, any]{key: NewMockKey(test), value: "zero"}
+					buckets[1] = &bucket[Key, any]{key: NewMockKey(test), value: "one"}
+					buckets[2] = &bucket[Key, any]{key: NewMockKey(test), value: "two"}
+					buckets[3] = &bucket[Key, any]{key: threeKey, value: "three"}
 
 					return buckets
 				},
@@ -567,7 +567,7 @@ func TestHashMap_Set(test *testing.T) {
 
 					return config
 				}(),
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					zeroKey := NewMockKey(test)
 					zeroKey.EXPECT().Hash().Return(0)
 
@@ -581,11 +581,11 @@ func TestHashMap_Set(test *testing.T) {
 					threeKey.EXPECT().Hash().Return(3)
 					threeKey.EXPECT().Equals(mock.Anything).Return(false)
 
-					buckets := make([]*bucket, 5)
-					buckets[0] = &bucket{key: zeroKey, value: "zero"}
-					buckets[1] = &bucket{key: oneKey, value: "one"}
-					buckets[2] = &bucket{key: twoKey, value: "two"}
-					buckets[3] = &bucket{key: threeKey, value: "three"}
+					buckets := make([]*bucket[Key, any], 5)
+					buckets[0] = &bucket[Key, any]{key: zeroKey, value: "zero"}
+					buckets[1] = &bucket[Key, any]{key: oneKey, value: "one"}
+					buckets[2] = &bucket[Key, any]{key: twoKey, value: "two"}
+					buckets[3] = &bucket[Key, any]{key: threeKey, value: "three"}
 
 					return buckets
 				},
@@ -609,7 +609,7 @@ func TestHashMap_Set(test *testing.T) {
 			key := data.args.key(test)
 			value := rand.Int()
 
-			hashMap := HashMap{
+			hashMap := HashMap[Key, any]{
 				config:  data.fields.config,
 				buckets: data.fields.buckets(test),
 				size:    data.fields.size,
@@ -628,7 +628,7 @@ func TestHashMap_Set(test *testing.T) {
 
 func TestHashMap_Delete(test *testing.T) {
 	type fields struct {
-		buckets func(test *testing.T) []*bucket
+		buckets func(test *testing.T) []*bucket[Key, any]
 		size    int
 	}
 	type args struct {
@@ -644,8 +644,8 @@ func TestHashMap_Delete(test *testing.T) {
 		{
 			name: "without buckets",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
-					return make([]*bucket, defaultConfig.initialCapacity)
+				buckets: func(test *testing.T) []*bucket[Key, any] {
+					return make([]*bucket[Key, any], defaultConfig.initialCapacity)
 				},
 				size: 0,
 			},
@@ -662,14 +662,14 @@ func TestHashMap_Delete(test *testing.T) {
 		{
 			name: "with few buckets and a match at the start",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: NewMockKey(test), value: "six"}
-					buckets[7] = &bucket{key: NewMockKey(test), value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: NewMockKey(test), value: "six"}
+					buckets[7] = &bucket[Key, any]{key: NewMockKey(test), value: "seven"}
 
 					return buckets
 				},
@@ -688,7 +688,7 @@ func TestHashMap_Delete(test *testing.T) {
 		{
 			name: "with few buckets and a match at the end",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -698,10 +698,10 @@ func TestHashMap_Delete(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(true)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -720,7 +720,7 @@ func TestHashMap_Delete(test *testing.T) {
 		{
 			name: "with few buckets and no match",
 			fields: fields{
-				buckets: func(test *testing.T) []*bucket {
+				buckets: func(test *testing.T) []*bucket[Key, any] {
 					fiveKey := NewMockKey(test)
 					fiveKey.EXPECT().Equals(mock.Anything).Return(false)
 
@@ -730,10 +730,10 @@ func TestHashMap_Delete(test *testing.T) {
 					sevenKey := NewMockKey(test)
 					sevenKey.EXPECT().Equals(mock.Anything).Return(false)
 
-					buckets := make([]*bucket, defaultConfig.initialCapacity)
-					buckets[5] = &bucket{key: fiveKey, value: "five"}
-					buckets[6] = &bucket{key: sixKey, value: "six"}
-					buckets[7] = &bucket{key: sevenKey, value: "seven"}
+					buckets := make([]*bucket[Key, any], defaultConfig.initialCapacity)
+					buckets[5] = &bucket[Key, any]{key: fiveKey, value: "five"}
+					buckets[6] = &bucket[Key, any]{key: sixKey, value: "six"}
+					buckets[7] = &bucket[Key, any]{key: sevenKey, value: "seven"}
 
 					return buckets
 				},
@@ -753,7 +753,7 @@ func TestHashMap_Delete(test *testing.T) {
 		test.Run(data.name, func(test *testing.T) {
 			key := data.args.key(test)
 
-			hashMap := HashMap{
+			hashMap := HashMap[Key, any]{
 				buckets: data.fields.buckets(test),
 				size:    data.fields.size,
 			}

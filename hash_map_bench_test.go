@@ -97,42 +97,42 @@ func BenchmarkBuiltinMap(benchmark *testing.B) {
 func BenchmarkHashMap(benchmark *testing.B) {
 	for _, data := range []struct {
 		name      string
-		prepare   func(size int) *HashMap
-		benchmark func(size int, hashMap *HashMap)
+		prepare   func(size int) *HashMap[Key, any]
+		benchmark func(size int, hashMap *HashMap[Key, any])
 	}{
 		{
 			name: "Get",
-			prepare: func(size int) *HashMap {
-				hashMap := NewHashMap()
+			prepare: func(size int) *HashMap[Key, any] {
+				hashMap := NewHashMap[Key, any]()
 				for i := 0; i < size; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(size int, hashMap *HashMap) {
+			benchmark: func(size int, hashMap *HashMap[Key, any]) {
 				hashMap.Get(IntKey(rand.IntN(size)))
 			},
 		},
 		{
 			name: "All",
-			prepare: func(size int) *HashMap {
-				hashMap := NewHashMap()
+			prepare: func(size int) *HashMap[Key, any] {
+				hashMap := NewHashMap[Key, any]()
 				for i := 0; i < size; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(size int, hashMap *HashMap) {
+			benchmark: func(size int, hashMap *HashMap[Key, any]) {
 				for range hashMap.All() {
 				}
 			},
 		},
 		{
 			name:    "Set",
-			prepare: func(size int) *HashMap { return NewHashMap() },
-			benchmark: func(size int, hashMap *HashMap) {
+			prepare: func(size int) *HashMap[Key, any] { return NewHashMap[Key, any]() },
+			benchmark: func(size int, hashMap *HashMap[Key, any]) {
 				for i := 0; i < size; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
@@ -140,15 +140,15 @@ func BenchmarkHashMap(benchmark *testing.B) {
 		},
 		{
 			name: "Delete",
-			prepare: func(size int) *HashMap {
-				hashMap := NewHashMap()
+			prepare: func(size int) *HashMap[Key, any] {
+				hashMap := NewHashMap[Key, any]()
 				for i := 0; i < size; i++ {
 					hashMap.Set(IntKey(i), i)
 				}
 
 				return hashMap
 			},
-			benchmark: func(size int, hashMap *HashMap) {
+			benchmark: func(size int, hashMap *HashMap[Key, any]) {
 				hashMap.Delete(IntKey(rand.IntN(size)))
 			},
 		},

@@ -20,7 +20,7 @@ func NewSynchronizedHashMap(
 ) *SynchronizedHashMap {
 	// you can't move the default synchronized config into a global variable
 	// because the default inner map should be new every time
-	config := SynchronizedConfig{innerMap: NewHashMap()}
+	config := SynchronizedConfig{innerMap: NewHashMap[Key, any]()}
 	for _, option := range options {
 		option(&config)
 	}
